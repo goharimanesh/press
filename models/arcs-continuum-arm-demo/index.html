@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constant-Curvature Continuum Arm — ARCSLAB interactive demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080d;--panel:rgba(16,14,12,.8);--line:rgba(255,190,130,.14);--line2:rgba(255,190,130,.28);--text:#f3ece4;--muted:#b3a593;--dim:#7a6d5e;
+  --amb:#ff9e4a;--amb2:#ffd08f;--cy:#47d3ff;--red:#ff6b6b;--green:#5be3a8;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#cv{position:fixed;inset:0;display:block;cursor:crosshair}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:5;text-align:center;padding:12px 16px 26px;pointer-events:none;background:linear-gradient(180deg,rgba(7,8,13,.95),rgba(7,8,13,0))}
+#hdr .k{font:600 10.5px var(--mono);letter-spacing:2px;text-transform:uppercase;color:var(--amb)}
+#hdr h1{font:700 19px var(--sans);margin-top:4px;color:#fff3e6}
+#hdr h1 span{color:var(--amb2);font-weight:500}
+#hdr p{font-size:12px;color:var(--muted);margin-top:3px}
+.panel{position:fixed;z-index:6;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+#ctrl{top:96px;right:16px;width:318px;max-height:calc(100vh - 112px);overflow:auto;padding:14px 16px 16px}
+#ctrl::-webkit-scrollbar{width:6px}#ctrl::-webkit-scrollbar-thumb{background:#3a2c1e;border-radius:3px}
+.t{font:700 10.5px var(--sans);letter-spacing:1.3px;text-transform:uppercase;color:var(--dim);margin:14px 0 9px}
+.t:first-child{margin-top:0}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;background:rgba(40,30,22,.8);color:#e4d6c6;border:1px solid var(--line2);border-radius:9px;padding:8px 4px;font:600 11.5px var(--sans);cursor:pointer;transition:.15s}
+.seg button:hover{background:#4a3624}
+.seg button.on{background:linear-gradient(180deg,#ffb066,#e8782a);color:#1a0f05;border-color:#ffb066}
+.ctl{margin-bottom:10px}
+.ctl label{display:flex;justify-content:space-between;font-size:11.5px;color:#ddd0c0;margin-bottom:5px}
+.ctl label b{font:700 11.5px var(--mono);color:var(--amb2)}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:#2a2119;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--amb);box-shadow:0 0 10px rgba(255,158,74,.7)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--amb)}
+input[type=range]:disabled{opacity:.55;cursor:default}
+.s1::-webkit-slider-thumb{border-color:#ff8a3d!important}.s2::-webkit-slider-thumb{border-color:#ffb35c!important}.s3::-webkit-slider-thumb{border-color:#ffd894!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.card{background:rgba(36,28,21,.7);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.card .k{font-size:9.5px;color:var(--muted)}
+.card .v{font:700 15px var(--mono);margin-top:2px;font-variant-numeric:tabular-nums}
+.card .v small{font-size:10.5px;color:var(--muted);font-weight:500}
+.card.hl .v{color:var(--amb2)}
+.tg{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#ddd0c0;margin-bottom:8px}
+.sw{position:relative;width:34px;height:19px;border-radius:10px;background:#2a2119;border:1px solid var(--line2);cursor:pointer;transition:.2s;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#7a6d5e;transition:.2s}
+.sw.on{background:#e8782a}.sw.on::after{left:17px;background:#fff}
+.btn{width:100%;margin-top:6px;background:rgba(40,30,22,.8);color:#e4d6c6;border:1px solid var(--line2);border-radius:9px;padding:9px;font:600 12px var(--sans);cursor:pointer}
+.btn:hover{background:#4a3624}
+.note{font-size:10.5px;line-height:1.6;color:var(--dim);margin-top:12px}
+.note b{color:var(--muted)}
+#plotp{left:16px;bottom:16px;width:360px;padding:10px 12px 10px}
+#plotp h3{font:700 10.5px var(--sans);letter-spacing:1.3px;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between}
+#plotp h3 span{color:var(--amb2);font-family:var(--mono);letter-spacing:0}
+#plot{width:100%;height:150px;display:block;margin-top:6px}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:4px}
+.leg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+#hint{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;font-size:11px;color:var(--dim);background:rgba(16,14,12,.7);padding:6px 12px;border-radius:9px;border:1px solid var(--line);white-space:nowrap}
+#hint kbd{font:600 10px var(--mono);color:var(--amb2);background:#2a2119;padding:2px 6px;border-radius:4px;margin:0 2px}
+@media (max-width:1100px){#plotp{width:280px}#hint{display:none}}
+@media (max-width:760px){#plotp{display:none}#ctrl{width:260px;top:110px}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="hdr">
+  <div class="k">ARCSLAB · Lab demo model</div>
+  <h1>Constant-Curvature Continuum Arm — <span>Interactive Kinematics</span></h1>
+  <p>Three-section planar tendon-driven continuum robot · piecewise-constant-curvature model · damped-least-squares inverse kinematics</p>
+</div>
+
+<div class="panel" id="ctrl">
+  <div class="t">Mode</div>
+  <div class="seg" id="mode">
+    <button data-m="manual">Manual</button><button data-m="track" class="on">Track ∞</button><button data-m="follow">Follow pointer</button>
+  </div>
+
+  <div class="t">Section bending angles θ<sub>i</sub> = κ<sub>i</sub> L<sub>i</sub></div>
+  <div class="ctl"><label>Section 1 (base) <b id="o1">0°</b></label><input class="s1" type="range" id="q1" min="-150" max="150" step="0.5" value="0"></div>
+  <div class="ctl"><label>Section 2 (middle) <b id="o2">0°</b></label><input class="s2" type="range" id="q2" min="-150" max="150" step="0.5" value="0"></div>
+  <div class="ctl"><label>Section 3 (tip) <b id="o3">0°</b></label><input class="s3" type="range" id="q3" min="-150" max="150" step="0.5" value="0"></div>
+
+  <div class="t">Live readouts</div>
+  <div class="grid2">
+    <div class="card"><div class="k">Tip x</div><div class="v" id="rx">0 <small>mm</small></div></div>
+    <div class="card"><div class="k">Tip y</div><div class="v" id="ry">0 <small>mm</small></div></div>
+    <div class="card hl"><div class="k">Tracking error</div><div class="v" id="re">— <small>mm</small></div></div>
+    <div class="card"><div class="k">Tip orientation</div><div class="v" id="ro">90 <small>°</small></div></div>
+    <div class="card"><div class="k">Tendon Δl · sect. 1</div><div class="v" id="t1">0 <small>mm</small></div></div>
+    <div class="card"><div class="k">Tendon Δl · sect. 2</div><div class="v" id="t2">0 <small>mm</small></div></div>
+    <div class="card"><div class="k">Tendon Δl · sect. 3</div><div class="v" id="t3">0 <small>mm</small></div></div>
+    <div class="card"><div class="k">Manipulability √det(JJᵀ)</div><div class="v" id="rm">0</div></div>
+  </div>
+
+  <div class="t">Trajectory &amp; solver</div>
+  <div class="ctl"><label>∞ speed <b id="osp">1.0×</b></label><input type="range" id="sp" min="0.2" max="3" step="0.05" value="1"></div>
+  <div class="ctl"><label>∞ size <b id="osz">100 %</b></label><input type="range" id="sz" min="40" max="140" step="1" value="100"></div>
+  <div class="ctl"><label>Damping λ <b id="olam">8.0 mm</b></label><input type="range" id="lam" min="0.5" max="40" step="0.5" value="8"></div>
+
+  <div class="t">Display</div>
+  <div class="tg"><span>Tip trail</span><div class="sw on" id="w-trail"></div></div>
+  <div class="tg"><span>Tendons</span><div class="sw on" id="w-tend"></div></div>
+  <div class="tg"><span>Reachable workspace</span><div class="sw" id="w-ws"></div></div>
+  <div class="tg"><span>Section frames</span><div class="sw" id="w-frames"></div></div>
+  <button class="btn" id="reset">↺ Straighten arm</button>
+
+  <div class="note"><b>Model.</b> Each section of length L = 60 mm bends with constant curvature κ<sub>i</sub>, so its end is
+    x = (sin(φ+θ) − sin φ)/κ, y = (cos φ − cos(φ+θ))/κ with θ = κL. Inverse kinematics solves
+    Δθ = Jᵀ(JJᵀ + λ²I)⁻¹ e every frame (limits ±150° per section). Tendons sit r = 8 mm from the backbone, so a tendon ending at section i shortens by Δl = r·Σθ<sub>j≤i</sub>.
+    <br><b>Lab demo:</b> a starting point for new ARCSLAB models.</div>
+</div>
+
+<div class="panel" id="plotp">
+  <h3>Tracking history <span id="rms">RMS —</span></h3>
+  <canvas id="plot"></canvas>
+  <div class="leg"><span><i style="background:#5be3a8"></i>error (mm)</span><span><i style="background:#ff8a3d"></i>θ₁</span><span><i style="background:#ffb35c"></i>θ₂</span><span><i style="background:#ffd894"></i>θ₃</span></div>
+</div>
+
+<div id="hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> mode &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>R</kbd> straighten &nbsp; click/drag to place the target</div>
+
+<script>
+(() => {
+  /* ---------------------------------------------------------------- model */
+  const LS = 60, NSEC = 3, RT = 8, QMAX = 150 * Math.PI / 180;      // mm, rad
+  const q = [0, 0, 0];
+  const COLORS = ['#ff8a3d', '#ffb35c', '#ffd894'];
+
+  function fk(qq, upto = NSEC) {        // tip pose of the first `upto` sections
+    let x = 0, y = 0, phi = Math.PI / 2;
+    for (let i = 0; i < upto; i++) {
+      const th = qq[i];
+      if (Math.abs(th) < 1e-7) { x += LS * Math.cos(phi); y += LS * Math.sin(phi); }
+      else { const r = LS / th; x += r * (Math.sin(phi + th) - Math.sin(phi)); y += r * (Math.cos(phi) - Math.cos(phi + th)); }
+      phi += th;
+    }
+    return { x, y, phi };
+  }
+  function backbone(qq, per = 36) {     // sampled points with tangent angle and section index
+    const pts = []; let x = 0, y = 0, phi = Math.PI / 2;
+    for (let i = 0; i < NSEC; i++) {
+      const th = qq[i];
+      for (let k = (i ? 1 : 0); k <= per; k++) {
+        const s = k / per, a = th * s;
+        let px, py;
+        if (Math.abs(th) < 1e-7) { px = x + LS * s * Math.cos(phi); py = y + LS * s * Math.sin(phi); }
+        else { const r = LS / th; px = x + r * (Math.sin(phi + a) - Math.sin(phi)); py = y + r * (Math.cos(phi) - Math.cos(phi + a)); }
+        pts.push({ x: px, y: py, a: phi + a, sec: i, s });
+      }
+      const e = fk([...qq.slice(0, i + 1)], i + 1); x = e.x; y = e.y; phi = e.phi;
+    }
+    return pts;
+  }
+  function jac(qq) {
+    const h = 1e-6, p0 = fk(qq), J = [[0, 0, 0], [0, 0, 0]];
+    for (let j = 0; j < NSEC; j++) { const qp = qq.slice(); qp[j] += h; const p = fk(qp); J[0][j] = (p.x - p0.x) / h; J[1][j] = (p.y - p0.y) / h; }
+    return { J, p0 };
+  }
+  function ikStep(target, lam) {
+    const { J, p0 } = jac(q), ex = target.x - p0.x, ey = target.y - p0.y;
+    let a = 0, b = 0, d = 0;
+    for (let j = 0; j < NSEC; j++) { a += J[0][j] * J[0][j]; b += J[0][j] * J[1][j]; d += J[1][j] * J[1][j]; }
+    const l2 = lam * lam, A = a + l2, D = d + l2, det = A * D - b * b;
+    const ux = (D * ex - b * ey) / det, uy = (-b * ex + A * ey) / det;
+    for (let j = 0; j < NSEC; j++) {
+      let dq = J[0][j] * ux + J[1][j] * uy;
+      dq = Math.max(-0.12, Math.min(0.12, dq));
+      q[j] = Math.max(-QMAX, Math.min(QMAX, q[j] + dq));
+    }
+  }
+  function manip(qq) { const { J } = jac(qq); let a = 0, b = 0, d = 0; for (let j = 0; j < NSEC; j++) { a += J[0][j] ** 2; b += J[0][j] * J[1][j]; d += J[1][j] ** 2; } return Math.sqrt(Math.max(0, a * d - b * b)); }
+
+  /* ---------------------------------------------------------------- state */
+  const S = { mode: 'track', t: 0, speed: 1, size: 1, lam: 8, paused: false, trail: [], hist: [], showTrail: true, showTend: true, showWS: false, showFrames: false,
+    target: { x: 0, y: 120 }, pointer: null, err: null };
+  const lemn = (u, sz) => ({ x: 70 * sz * Math.cos(u), y: 112 + 36 * sz * Math.sin(2 * u) });
+
+  /* workspace cloud (computed once) */
+  const WS = []; for (let i = 0; i < 2600; i++) { const p = fk([(Math.random() * 2 - 1) * QMAX, (Math.random() * 2 - 1) * QMAX, (Math.random() * 2 - 1) * QMAX]); WS.push(p); }
+
+  /* ---------------------------------------------------------------- canvas */
+  const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+  let W, H, DPR, sc, ox, oy;
+  function resize() {
+    DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const right = W > 760 ? 350 : 280, availW = Math.max(200, W - right - 40), availH = H - 200;
+    sc = Math.max(1, Math.min(availH / 205, availW / 380));
+    ox = 20 + availW / 2; oy = H - 92;
+  }
+  addEventListener('resize', resize); resize();
+  const X = x => ox + x * sc, Y = y => oy - y * sc, IX = px => (px - ox) / sc, IY = py => (oy - py) / sc;
+
+  function drawGrid() {
+    cx.lineWidth = 1;
+    const step = 20, xr = Math.ceil((W / sc) / step), yr = Math.ceil((H / sc) / step);
+    for (let i = -xr; i <= xr; i++) { cx.strokeStyle = i % 5 ? 'rgba(255,190,130,.035)' : 'rgba(255,190,130,.08)'; cx.beginPath(); cx.moveTo(X(i * step), 0); cx.lineTo(X(i * step), H); cx.stroke(); }
+    for (let j = -2; j <= yr; j++) { cx.strokeStyle = j % 5 ? 'rgba(255,190,130,.035)' : 'rgba(255,190,130,.08)'; cx.beginPath(); cx.moveTo(0, Y(j * step)); cx.lineTo(W, Y(j * step)); cx.stroke(); }
+    // reach circle
+    cx.setLineDash([2, 6]); cx.strokeStyle = 'rgba(255,190,130,.12)'; cx.beginPath(); cx.arc(X(0), Y(0), 180 * sc, Math.PI, 2 * Math.PI); cx.stroke(); cx.setLineDash([]);
+    cx.fillStyle = 'rgba(255,190,130,.35)'; cx.font = '500 10px JetBrains Mono, monospace'; cx.textAlign = 'left';
+    cx.fillText('reach 180 mm', X(180 * Math.cos(-0.2)) + 4, Y(180 * Math.sin(0.2)));
+  }
+  function drawBase() {
+    const w = 64 * sc, h = 18 * sc;
+    const g = cx.createLinearGradient(0, Y(0), 0, Y(0) + h); g.addColorStop(0, '#5a4636'); g.addColorStop(1, '#2a1f17');
+    cx.fillStyle = g; cx.strokeStyle = 'rgba(255,190,130,.35)'; cx.lineWidth = 1;
+    roundRect(X(-32), Y(0), w, h, 4 * sc); cx.fill(); cx.stroke();
+    cx.fillStyle = '#c9b29a'; for (const bx of [-24, 24]) { cx.beginPath(); cx.arc(X(bx), Y(-9), 2.2 * sc, 0, 7); cx.fill(); }
+    // motors / tendon spools
+    for (let i = 0; i < 3; i++) { cx.fillStyle = COLORS[i]; cx.globalAlpha = .75; cx.fillRect(X(-12 + i * 9) - 2.5 * sc, Y(-4), 5 * sc, 5 * sc); }
+    cx.globalAlpha = 1;
+  }
+  function roundRect(x, y, w, h, r) { cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
+
+  function drawArm() {
+    const pts = backbone(q, 36);
+    // soft glow under the arm
+    cx.save(); cx.shadowColor = 'rgba(255,140,60,.55)'; cx.shadowBlur = 24 * Math.min(1, sc / 3);
+    cx.strokeStyle = 'rgba(255,150,70,.25)'; cx.lineWidth = 22 * sc; cx.lineCap = 'round'; cx.lineJoin = 'round';
+    cx.beginPath(); pts.forEach((p, i) => i ? cx.lineTo(X(p.x), Y(p.y)) : cx.moveTo(X(p.x), Y(p.y))); cx.stroke(); cx.restore();
+    // tendons (a pair per section, routed through the disks)
+    if (S.showTend) {
+      const off = [10, 7.5, 5];
+      for (let i = 0; i < NSEC; i++) for (const sg of [-1, 1]) {
+        cx.strokeStyle = COLORS[i]; cx.globalAlpha = .9; cx.lineWidth = Math.max(1, .9 * sc);
+        cx.beginPath(); let started = false;
+        for (const p of pts) { if (p.sec > i) break; const nx = -Math.sin(p.a), ny = Math.cos(p.a), x = p.x + sg * off[i] * nx, y = p.y + sg * off[i] * ny; started ? cx.lineTo(X(x), Y(y)) : (cx.moveTo(X(x), Y(y)), started = true); }
+        cx.stroke(); cx.globalAlpha = 1;
+      }
+    }
+    // central spine
+    cx.strokeStyle = '#e9d9c6'; cx.lineWidth = Math.max(1.5, 2.6 * sc); cx.lineCap = 'round';
+    cx.beginPath(); pts.forEach((p, i) => i ? cx.lineTo(X(p.x), Y(p.y)) : cx.moveTo(X(p.x), Y(p.y))); cx.stroke();
+    // vertebra disks every 7.5 mm
+    for (let k = 0; k < pts.length; k++) {
+      const p = pts[k]; if (k === 0 || Math.round(p.s * 36) % 4 !== 0) continue;
+      const nx = -Math.sin(p.a), ny = Math.cos(p.a), R = 12.5 - p.sec * 1.6, t = 1.9;
+      const tx = Math.cos(p.a), ty = Math.sin(p.a);
+      cx.fillStyle = COLORS[p.sec]; cx.strokeStyle = 'rgba(30,18,8,.85)'; cx.lineWidth = 1;
+      cx.beginPath();
+      cx.moveTo(X(p.x - nx * R - tx * t), Y(p.y - ny * R - ty * t)); cx.lineTo(X(p.x + nx * R - tx * t), Y(p.y + ny * R - ty * t));
+      cx.lineTo(X(p.x + nx * R + tx * t), Y(p.y + ny * R + ty * t)); cx.lineTo(X(p.x - nx * R + tx * t), Y(p.y - ny * R + ty * t));
+      cx.closePath(); cx.fill(); cx.stroke();
+      if (p.s === 1 && p.sec < 2) { cx.fillStyle = '#1a0f05'; cx.beginPath(); cx.arc(X(p.x), Y(p.y), 2.4 * sc, 0, 7); cx.fill(); }
+    }
+    // section frames
+    if (S.showFrames) {
+      for (let i = 1; i <= NSEC; i++) {
+        const e = fk(q, i), L = 16;
+        cx.lineWidth = 2;
+        cx.strokeStyle = '#ff6b6b'; cx.beginPath(); cx.moveTo(X(e.x), Y(e.y)); cx.lineTo(X(e.x + L * Math.cos(e.phi)), Y(e.y + L * Math.sin(e.phi))); cx.stroke();
+        cx.strokeStyle = '#5be3a8'; cx.beginPath(); cx.moveTo(X(e.x), Y(e.y)); cx.lineTo(X(e.x - L * Math.sin(e.phi)), Y(e.y + L * Math.cos(e.phi))); cx.stroke();
+      }
+    }
+    // end effector: two-finger gripper
+    const e = fk(q), tx = Math.cos(e.phi), ty = Math.sin(e.phi), nx = -ty, ny = tx;
+    cx.strokeStyle = '#fff3e6'; cx.lineWidth = Math.max(1.5, 2.2 * sc); cx.lineCap = 'round';
+    for (const sg of [-1, 1]) { cx.beginPath(); cx.moveTo(X(e.x + sg * 6 * nx), Y(e.y + sg * 6 * ny)); cx.lineTo(X(e.x + sg * 6 * nx + 9 * tx), Y(e.y + sg * 6 * ny + 9 * ty)); cx.lineTo(X(e.x + sg * 2.5 * nx + 13 * tx), Y(e.y + sg * 2.5 * ny + 13 * ty)); cx.stroke(); }
+    const g = cx.createRadialGradient(X(e.x), Y(e.y), 0, X(e.x), Y(e.y), 9 * sc); g.addColorStop(0, '#fff'); g.addColorStop(1, 'rgba(255,200,140,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(X(e.x), Y(e.y), 9 * sc, 0, 7); cx.fill();
+    return e;
+  }
+  function drawTarget(t, now) {
+    const r = (5 + 1.2 * Math.sin(now * .006)) * sc;
+    cx.strokeStyle = '#47d3ff'; cx.lineWidth = 1.5;
+    cx.beginPath(); cx.arc(X(t.x), Y(t.y), r, 0, 7); cx.stroke();
+    cx.beginPath(); for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { cx.moveTo(X(t.x) + a * r * .6, Y(t.y) + b * r * .6); cx.lineTo(X(t.x) + a * r * 1.8, Y(t.y) + b * r * 1.8); } cx.stroke();
+    const g = cx.createRadialGradient(X(t.x), Y(t.y), 0, X(t.x), Y(t.y), r * 3); g.addColorStop(0, 'rgba(71,211,255,.35)'); g.addColorStop(1, 'rgba(71,211,255,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(X(t.x), Y(t.y), r * 3, 0, 7); cx.fill();
+  }
+
+  /* ---------------------------------------------------------------- plot */
+  const pc = document.getElementById('plot'), px = pc.getContext('2d');
+  function drawPlot() {
+    const r = pc.getBoundingClientRect(); if (!r.width) return;
+    if (pc.width !== Math.round(r.width * DPR)) { pc.width = r.width * DPR; pc.height = r.height * DPR; }
+    px.setTransform(DPR, 0, 0, DPR, 0, 0); const w = r.width, h = r.height;
+    px.clearRect(0, 0, w, h);
+    const H_ = S.hist, n = 360, pl = 30, pb = 14, pw = w - pl - 4, ph = h - pb - 4;
+    px.strokeStyle = 'rgba(255,190,130,.08)'; px.fillStyle = '#7a6d5e'; px.font = '9.5px JetBrains Mono, monospace'; px.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) { const y = 4 + ph * i / 4; px.beginPath(); px.moveTo(pl, y); px.lineTo(pl + pw, y); px.stroke(); }
+    const eMax = Math.max(4, ...H_.map(s => s.e ?? 0)) * 1.15;
+    px.fillText(eMax.toFixed(0), pl - 4, 10); px.fillText('0', pl - 4, 4 + ph);
+    px.textAlign = 'left'; px.fillText('±150°', pl + 3, 12);
+    const Xp = i => pl + pw * (i / (n - 1)), off = n - H_.length;
+    for (let j = 0; j < 3; j++) {
+      px.strokeStyle = COLORS[j]; px.globalAlpha = .55; px.lineWidth = 1.2; px.beginPath();
+      H_.forEach((s, i) => { const y = 4 + ph / 2 - (s.q[j] / QMAX) * ph / 2; i ? px.lineTo(Xp(i + off), y) : px.moveTo(Xp(i + off), y); }); px.stroke();
+    }
+    px.globalAlpha = 1; px.strokeStyle = '#5be3a8'; px.lineWidth = 2; px.beginPath(); let st = false;
+    H_.forEach((s, i) => { if (s.e == null) { st = false; return; } const y = 4 + ph - s.e / eMax * ph; st ? px.lineTo(Xp(i + off), y) : (px.moveTo(Xp(i + off), y), st = true); }); px.stroke();
+  }
+
+  /* ---------------------------------------------------------------- UI */
+  const $ = id => document.getElementById(id), sliders = [$('q1'), $('q2'), $('q3')];
+  function setMode(m) {
+    S.mode = m; S.trail.length = 0;
+    document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    sliders.forEach(s => s.disabled = m !== 'manual');
+  }
+  document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+  sliders.forEach((s, i) => s.addEventListener('input', () => { if (S.mode !== 'manual') setMode('manual'); q[i] = s.value * Math.PI / 180; }));
+  $('sp').oninput = e => { S.speed = +e.target.value; $('osp').textContent = S.speed.toFixed(1) + '×'; };
+  $('sz').oninput = e => { S.size = e.target.value / 100; $('osz').textContent = e.target.value + ' %'; S.trail.length = 0; };
+  $('lam').oninput = e => { S.lam = +e.target.value; $('olam').textContent = S.lam.toFixed(1) + ' mm'; };
+  function sw(id, key) { const el = $(id); el.onclick = () => { S[key] = !S[key]; el.classList.toggle('on', S[key]); if (key === 'showTrail') S.trail.length = 0; }; }
+  sw('w-trail', 'showTrail'); sw('w-tend', 'showTend'); sw('w-ws', 'showWS'); sw('w-frames', 'showFrames');
+  $('reset').onclick = () => { q.fill(0); S.trail.length = 0; if (S.mode !== 'manual') setMode('manual'); };
+  addEventListener('keydown', e => {
+    if (e.key === '1') setMode('manual'); else if (e.key === '2') setMode('track'); else if (e.key === '3') setMode('follow');
+    else if (e.key === ' ') { S.paused = !S.paused; e.preventDefault(); }
+    else if (e.key === 'r' || e.key === 'R') $('reset').click();
+  });
+  let dragging = false;
+  const toWorld = e => ({ x: IX(e.clientX), y: IY(e.clientY) });
+  cv.addEventListener('pointerdown', e => { dragging = true; cv.setPointerCapture(e.pointerId); S.pointer = toWorld(e); if (S.mode !== 'follow') setMode('follow'); });
+  cv.addEventListener('pointermove', e => { if (S.mode === 'follow' && (dragging || e.pointerType === 'mouse')) S.pointer = toWorld(e); });
+  cv.addEventListener('pointerup', () => dragging = false);
+  setMode('track');
+
+  /* ---------------------------------------------------------------- loop */
+  let last = performance.now(), histT = 0;
+  function frame(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!S.paused) S.t += dt * S.speed;
+    // target
+    let target = null;
+    if (S.mode === 'track') target = lemn(S.t * 0.9, S.size);
+    else if (S.mode === 'follow' && S.pointer) {
+      const p = S.pointer, d = Math.hypot(p.x, p.y), lim = 178;
+      const tp = d > lim ? { x: p.x * lim / d, y: p.y * lim / d } : { x: p.x, y: Math.max(-40, p.y) };
+      S.target.x += (tp.x - S.target.x) * .25; S.target.y += (tp.y - S.target.y) * .25; target = S.target;
+    }
+    if (target && !S.paused) for (let k = 0; k < 6; k++) ikStep(target, S.lam);
+
+    // draw
+    cx.clearRect(0, 0, W, H);
+    const bg = cx.createRadialGradient(X(0), Y(100), 0, X(0), Y(100), Math.max(W, H) * .7); bg.addColorStop(0, '#16110c'); bg.addColorStop(1, '#07080d');
+    cx.fillStyle = bg; cx.fillRect(0, 0, W, H);
+    drawGrid();
+    if (S.showWS) { cx.fillStyle = 'rgba(255,170,90,.16)'; for (const p of WS) cx.fillRect(X(p.x) - 1, Y(p.y) - 1, 2, 2); }
+    if (S.mode === 'track') {
+      cx.setLineDash([4, 6]); cx.strokeStyle = 'rgba(71,211,255,.35)'; cx.lineWidth = 1.4; cx.beginPath();
+      for (let i = 0; i <= 160; i++) { const p = lemn(i / 160 * Math.PI * 2, S.size); i ? cx.lineTo(X(p.x), Y(p.y)) : cx.moveTo(X(p.x), Y(p.y)); }
+      cx.stroke(); cx.setLineDash([]);
+    }
+    if (S.showTrail && S.trail.length > 1) {
+      for (let i = 1; i < S.trail.length; i++) {
+        const a = i / S.trail.length; cx.strokeStyle = `rgba(255,170,90,${a * .8})`; cx.lineWidth = 1 + 2.2 * a;
+        cx.beginPath(); cx.moveTo(X(S.trail[i - 1].x), Y(S.trail[i - 1].y)); cx.lineTo(X(S.trail[i].x), Y(S.trail[i].y)); cx.stroke();
+      }
+    }
+    drawBase();
+    const e = drawArm();
+    if (target) drawTarget(target, now);
+    if (!S.paused) { S.trail.push({ x: e.x, y: e.y }); if (S.trail.length > 260) S.trail.shift(); }
+
+    // readouts
+    const err = target ? Math.hypot(target.x - e.x, target.y - e.y) : null;
+    $('rx').innerHTML = e.x.toFixed(1) + ' <small>mm</small>'; $('ry').innerHTML = e.y.toFixed(1) + ' <small>mm</small>';
+    $('re').innerHTML = (err == null ? '—' : err.toFixed(2)) + ' <small>mm</small>';
+    $('ro').innerHTML = (e.phi * 180 / Math.PI).toFixed(1) + ' <small>°</small>';
+    let cum = 0;
+    for (let i = 0; i < 3; i++) {
+      cum += q[i]; $('t' + (i + 1)).innerHTML = (RT * cum).toFixed(2) + ' <small>mm</small>';
+      const deg = q[i] * 180 / Math.PI; $('o' + (i + 1)).textContent = deg.toFixed(1) + '°';
+      if (S.mode !== 'manual') sliders[i].value = deg;
+    }
+    $('rm').textContent = (manip(q) / 1000).toFixed(2) + ' ×10³';
+    histT += dt;
+    if (histT > 1 / 30 && !S.paused) {
+      histT = 0; S.hist.push({ e: err, q: q.slice() }); if (S.hist.length > 360) S.hist.shift();
+      const es = S.hist.filter(s => s.e != null).slice(-180);
+      $('rms').textContent = es.length ? 'RMS ' + Math.sqrt(es.reduce((s, x) => s + x.e * x.e, 0) / es.length).toFixed(2) + ' mm' : 'RMS —';
+      drawPlot();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <radialGradient id="bg" cx=".62" cy=".5" r=".85"><stop offset="0" stop-color="#0d2238"/><stop offset=".6" stop-color="#06101c"/><stop offset="1" stop-color="#03070d"/></radialGradient>
+    <linearGradient id="turbo" x1="0" x2="1"><stop offset="0" stop-color="#30123b"/><stop offset=".25" stop-color="#2b7bf1"/><stop offset=".5" stop-color="#2be0b2"/><stop offset=".75" stop-color="#f6c33a"/><stop offset="1" stop-color="#e5461a"/></linearGradient>
+    <linearGradient id="au" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2a0"/><stop offset="1" stop-color="#b9862e"/></linearGradient>
+    <radialGradient id="glass" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e8f7ff" stop-opacity=".9"/><stop offset=".45" stop-color="#7cc9f5" stop-opacity=".45"/><stop offset="1" stop-color="#1b4a74" stop-opacity=".55"/></radialGradient>
+    <radialGradient id="tip" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffc25a"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#78b4ff" stroke-opacity=".06"/></pattern>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/><rect width="800" height="500" fill="url(#grid)"/>
+  <!-- electrodes -->
+  <rect x="-20" y="90" width="170" height="80" rx="6" fill="#203347"/><rect x="-20" y="84" width="164" height="10" rx="3" fill="url(#au)"/>
+  <rect x="-20" y="330" width="170" height="80" rx="6" fill="#203347"/><rect x="-20" y="324" width="164" height="10" rx="3" fill="url(#au)"/>
+  <!-- field lines -->
+  <g fill="none" stroke="#38bdf8" stroke-width="1.4" opacity=".7" filter="url(#glow)">
+    <path d="M230 168 Q215 250 230 332"/><path d="M330 178 Q305 250 330 322"/><path d="M430 190 Q400 250 430 310"/><path d="M530 202 Q495 250 530 298"/><path d="M620 212 Q590 250 620 288"/>
+  </g>
+  <g fill="none" stroke="#7dd3fc" stroke-width="1" opacity=".8">
+    <path d="M230 168 L230 332"/><path d="M330 178 L330 322"/><path d="M430 190 L430 310"/><path d="M530 202 L530 298"/><path d="M620 212 L620 288"/>
+    <path d="M280 172 Q300 250 280 328" opacity=".6"/><path d="M380 184 Q410 250 380 316" opacity=".6"/><path d="M480 196 Q515 250 480 304" opacity=".6"/><path d="M575 207 Q605 250 575 293" opacity=".6"/>
+  </g>
+  <!-- charges -->
+  <g fill="#ffc27a"><circle cx="229" cy="210" r="3"/><circle cx="330" cy="280" r="3"/><circle cx="431" cy="230" r="3"/><circle cx="529" cy="270" r="3"/><circle cx="398" cy="252" r="2.4"/><circle cx="302" cy="230" r="2.4"/><circle cx="604" cy="246" r="2.4"/></g>
+  <!-- nanowires -->
+  <path d="M140 164 C 360 166, 560 190, 690 222" fill="none" stroke="url(#turbo)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M140 336 C 360 334, 560 310, 690 278" fill="none" stroke="url(#turbo)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M140 160 C 360 162, 560 186, 690 218" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+  <path d="M140 332 C 360 330, 560 306, 690 274" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+  <!-- particle -->
+  <circle cx="655" cy="250" r="27" fill="url(#glass)" stroke="#bfe6ff" stroke-opacity=".7"/>
+  <ellipse cx="646" cy="240" rx="9" ry="5" fill="#fff" fill-opacity=".7"/>
+  <!-- tips -->
+  <circle cx="692" cy="222" r="22" fill="url(#tip)"/><circle cx="692" cy="278" r="22" fill="url(#tip)"/>
+  <!-- labels -->
+  <g font-family="ui-monospace,Menlo,monospace" font-size="15" fill="#9cc7f2">
+    <text x="34" y="466">V = 99.4 V</text><text x="160" y="466" fill="#f8a917">● PULL-IN</text>
+    <text x="766" y="466" text-anchor="end" fill="#5d728a">g = 3.72 µm</text>
+  </g>
+</svg>

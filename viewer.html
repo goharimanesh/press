@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model viewer — ARCSLAB × SSSLAB</title>
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="viewer">
+
+<header class="vbar" id="vbar">
+  <a class="vbtn" href="index.html#models" title="Back to the gallery">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span class="vhide-sm">Gallery</span></a>
+  <div class="vgroup vhide-sm">
+    <a class="vbtn" id="prev" title="Previous model">‹</a>
+    <a class="vbtn" id="next" title="Next model">›</a>
+  </div>
+  <div class="vtitle">
+    <span class="chip" id="vchip"></span>
+    <div class="t"><b id="vtitle">Loading…</b><span id="vauthors"></span></div>
+  </div>
+  <div id="vpod" class="vhide-md"></div>
+  <span class="vsep vhide-md"></span>
+  <div class="vgroup">
+    <button class="vbtn" id="info" title="About this model (podcast, abstract)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg><span class="vhide-sm">About</span></button>
+    <a class="vbtn vhide-sm" id="standalone" target="_blank" rel="noopener" title="Open the model on its own in a new tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <button class="vbtn" id="fs" title="Full screen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </div>
+</header>
+
+<main class="vstage">
+  <iframe id="frame" title="Interactive model" allow="camera; microphone; fullscreen; autoplay; clipboard-write"></iframe>
+  <div class="vload" id="vload"><div class="ring"></div><b id="vloadT"></b><span>Loading interactive model</span></div>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <button class="vbtn drawer-close" id="dclose" aria-label="Close">✕</button>
+    <span class="chip" id="dchip"></span>
+    <h2 id="dtitle"></h2>
+    <div class="venue" id="dvenue"></div>
+    <h4>Podcast</h4>
+    <div id="dpod"></div>
+    <h4>Authors</h4>
+    <p id="dauthors"></p>
+    <h4>Abstract</h4>
+    <p id="dabstract"></p>
+    <h4>What you can do</h4>
+    <ul id="dfeats"></ul>
+    <h4>Tags</h4>
+    <div class="tags" id="dtags"></div>
+  </aside>
+</main>
+
+<script src="models/registry.js"></script>
+<script src="assets/js/podcast.js"></script>
+<script>
+(() => {
+  const D = window.SHOWCASE, M = D.models, $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const id = new URLSearchParams(location.search).get('id');
+  const i = M.findIndex(m => m.id === id);
+  if (i < 0) { location.replace('index.html#models'); return; }
+  const m = M[i], lab = D.labs[m.lab] || {};
+  const src = 'models/' + m.id + '/' + (m.entry || 'index.html');
+
+  document.title = m.title + ' — ' + lab.name;
+  ['vbar', 'drawer'].forEach(k => $(k).dataset.lab = m.lab);
+  document.documentElement.style.setProperty('--c', m.lab === 'arcslab' ? 'var(--arcs)' : 'var(--sss)');
+  for (const c of ['vchip', 'dchip']) { $(c).className = 'chip ' + m.lab; $(c).textContent = lab.name; }
+  $('vtitle').textContent = m.title + (m.subtitle ? ' — ' + m.subtitle : '');
+  $('vauthors').textContent = (m.authors || []).join(' · ');
+  $('vloadT').textContent = m.title;
+  $('standalone').href = src;
+
+  // prev / next
+  const go = k => 'viewer.html?id=' + encodeURIComponent(M[(i + k + M.length) % M.length].id);
+  $('prev').href = go(-1); $('next').href = go(1);
+  if (M.length < 2) { $('prev').style.display = $('next').style.display = 'none'; }
+
+  // drawer content
+  $('dtitle').innerHTML = esc(m.title) + `<span>${esc(m.subtitle || '')}</span>`;
+  $('dvenue').textContent = [lab.full, m.venue, m.language ? 'Interface: ' + m.language : ''].filter(Boolean).join('  ·  ');
+  $('dauthors').textContent = (m.authors || []).join(' · ');
+  $('dabstract').textContent = m.abstract || '';
+  $('dfeats').innerHTML = (m.features || []).map(f => `<li>${esc(f)}</li>`).join('');
+  $('dtags').innerHTML = (m.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+
+  // podcast: compact in the bar, full in the drawer
+  new Podcast.Player($('vpod'), m, { compact: true });
+  new Podcast.Player($('dpod'), m);
+
+  // model
+  const fr = $('frame');
+  fr.addEventListener('load', () => { $('vload').classList.add('hide'); try { fr.focus(); } catch (e) {} });
+  fr.src = src;
+
+  const drawer = $('drawer'), info = $('info');
+  const setDrawer = open => { drawer.classList.toggle('open', open); drawer.setAttribute('aria-hidden', !open); info.classList.toggle('on', open); if (!open) try { fr.focus(); } catch (e) {} };
+  info.onclick = () => setDrawer(!drawer.classList.contains('open'));
+  $('dclose').onclick = () => setDrawer(false);
+  addEventListener('keydown', e => { if (e.key === 'Escape') setDrawer(false); });
+
+  $('fs').onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); };
+  document.addEventListener('fullscreenchange', () => $('fs').classList.toggle('on', !!document.fullscreenElement));
+})();
+</script>
+</body>
+</html>

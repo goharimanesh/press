@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شبیه‌ساز سه‌بعدی نانوانبرک مخروطی FGM | دانشگاه تربت حیدریه</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b16; --glass:rgba(12,18,36,0.86); --line:rgba(94,160,220,0.24);
+    --ink:#e7ecf5; --mute:#8e9cb6; --teal:#14a3a3; --teal-d:#0b7575; --amb:#f2a541; --cor:#e85d75; --navy:#0f1b3d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:'Vazirmatn','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);direction:rtl;-webkit-font-smoothing:antialiased}
+  #canvas-host{position:fixed;inset:0}
+  .glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+  /* header */
+  #top-header{position:fixed;top:0;left:0;right:0;z-index:20;padding:8px 16px 14px;text-align:center;pointer-events:none;
+    background:linear-gradient(180deg,rgba(7,11,22,.96) 0%,rgba(7,11,22,.7) 70%,rgba(7,11,22,0) 100%)}
+  .bismillah{font-family:'Amiri',serif;font-size:18px;font-weight:700;color:#ffd16b;text-shadow:0 0 20px rgba(255,209,107,.35);line-height:1.35}
+  .bismillah-sub{font-family:'Amiri',serif;font-size:13px;font-weight:600;color:#f0c060;line-height:1.3}
+  .divider{width:60%;max-width:520px;height:1px;margin:5px auto;background:linear-gradient(90deg,transparent,rgba(80,160,255,.55),transparent)}
+  #top-header h1{font-size:14.5px;font-weight:800;color:#9fd3ff}
+  #top-header .authors{font-size:11.5px;color:#a8c0dc;font-weight:500;margin-top:2px}
+  #top-header .uni{font-size:11px;color:#5fdf95;font-weight:600}
+  /* right control panel */
+  #panel{position:fixed;top:120px;right:14px;width:330px;z-index:10;padding:12px 14px 14px;max-height:calc(100vh - 136px);overflow-y:auto}
+  #panel::-webkit-scrollbar{width:6px}#panel::-webkit-scrollbar-thumb{background:#2a4a7a;border-radius:3px}
+  .sec{font-size:12px;color:#7fc4ff;font-weight:800;margin:12px 0 7px;padding-bottom:5px;border-bottom:1px solid rgba(80,160,255,.18);display:flex;justify-content:space-between;align-items:center}
+  .sec:first-child{margin-top:0}
+  .ctrl{margin-bottom:9px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:11.5px;color:#b8c8e0;margin-bottom:4px;font-weight:500}
+  .ctrl label .val{color:#ffd16b;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr}
+  input[type=range]{direction:ltr;width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(90deg,#173a5e,#14a3a3)}
+  input[type=range].volt{height:7px;background:linear-gradient(90deg,#14a3a3 0%,#f2a541 85%,#e85d75 100%)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--teal);box-shadow:0 0 10px rgba(20,163,163,.85)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--teal)}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .presets button,.view-btns button,.btn{background:rgba(30,50,90,.65);color:#c4d2e8;border:1px solid rgba(80,160,255,.25);border-radius:8px;padding:6px 5px;font-size:10.8px;cursor:pointer;transition:.15s;font-family:'Vazirmatn',sans-serif;font-weight:600}
+  .presets button:hover,.view-btns button:hover,.btn:hover{background:rgba(20,120,140,.6);color:#fff;border-color:var(--teal)}
+  .presets button.active,.view-btns button.active{background:var(--teal-d);color:#fff;border-color:#5fd6d6}
+  .view-btns{display:flex;gap:4px;flex-wrap:wrap}.view-btns button{flex:1;min-width:52px}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+  .card{background:rgba(20,30,52,.72);border-radius:10px;padding:7px 9px;border:1px solid rgba(80,160,255,.14)}
+  .card .k{font-size:10px;color:#8196b8;font-weight:500}
+  .card .v{font-size:15px;font-weight:800;color:#9fd3ff;font-variant-numeric:tabular-nums;margin-top:1px;direction:ltr;text-align:right}
+  .card.hot .v{color:var(--amb)} .card.bad .v{color:var(--cor)} .card.ok .v{color:#5fdf95}
+  #status{font-size:11.5px;text-align:center;padding:8px 10px;border-radius:9px;font-weight:700;margin:4px 0 8px;transition:.2s}
+  .stable{background:rgba(40,180,90,.16);color:#5fdf95;border:1px solid rgba(40,180,90,.4)}
+  .critical{background:rgba(255,180,30,.16);color:#ffce5f;border:1px solid rgba(255,180,30,.4)}
+  .pulled{background:rgba(255,60,60,.2);color:#ff7b6b;border:1px solid rgba(255,60,60,.45);animation:pulse .85s infinite alternate}
+  .busy{background:rgba(80,140,255,.15);color:#9fc4ff;border:1px solid rgba(80,140,255,.4)}
+  @keyframes pulse{from{box-shadow:0 0 0 rgba(255,60,60,0)}to{box-shadow:0 0 18px rgba(255,60,60,.65)}}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#b8c8e0;margin-bottom:7px;font-weight:500}
+  .switch{position:relative;width:36px;height:19px;background:#1a2a44;border-radius:10px;cursor:pointer;transition:.2s;border:1px solid rgba(80,160,255,.2);flex-shrink:0}
+  .switch::after{content:'';position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#667;transition:.2s}
+  .switch.on{background:var(--teal-d)} .switch.on::after{right:19px;background:#fff}
+  #btn-sweep{width:100%;background:linear-gradient(90deg,#0b7575,#14a3a3);color:#fff;border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Vazirmatn',sans-serif}
+  #btn-sweep:hover{filter:brightness(1.15)}
+  /* left: chart */
+  #chart-panel{position:fixed;top:120px;left:14px;width:380px;z-index:10;padding:10px 12px 10px}
+  #chart-panel .ttl{font-size:12px;font-weight:800;color:#7fc4ff;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  #chart{width:100%;height:230px;display:block}
+  .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}
+  .kp .card{padding:5px 6px}.kp .card .v{font-size:13px;text-align:center}.kp .card .k{text-align:center;font-size:9.5px}
+  .chartleg{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--mute);margin-top:6px}
+  .chartleg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-left:4px}
+  #legend{position:fixed;bottom:14px;left:14px;z-index:10;padding:9px 12px;font-size:11px;color:#a8bcd8;line-height:1.7;font-weight:500;width:380px}
+  #legend b{color:#9fd3ff}
+  #fgmbar{height:9px;border-radius:5px;margin:4px 0 2px;background:linear-gradient(90deg,#b87333,#d9a36b,#e8e2d0,#8fd3d3,#0b7575)}
+  .lgrow{display:flex;justify-content:space-between;font-size:10px;color:var(--mute)}
+  #hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9;font-size:10.5px;color:#7080a0;background:rgba(10,15,30,.65);padding:6px 11px;border-radius:8px;border:1px solid rgba(80,160,255,.12);white-space:nowrap}
+  #hint kbd{background:#1a2a44;padding:2px 6px;border-radius:4px;color:#8ecbff;font-size:10px;font-family:monospace;margin:0 2px}
+  /* camera */
+  #camera-panel{position:fixed;bottom:150px;left:14px;z-index:15;width:380px;height:230px;overflow:hidden;display:flex;flex-direction:column;border-radius:14px}
+  #camera-panel.min{height:34px}
+  .cam-header{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(20,30,50,.92);border-bottom:1px solid rgba(80,160,255,.2);font-size:11px;font-weight:700;color:#8ecbff;flex-shrink:0;cursor:pointer}
+  .cam-status{font-size:9.5px;padding:2px 7px;border-radius:5px;background:rgba(255,180,30,.2);color:#ffce5f;font-weight:600}
+  .cam-status.active{background:rgba(40,180,90,.25);color:#5fdf95}.cam-status.error{background:rgba(255,60,60,.25);color:#ff7b6b}
+  #camera-wrap{position:relative;flex:1;background:#000;overflow:hidden}
+  #webcam,#overlay-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  #overlay-canvas{pointer-events:none}
+  .cam-footer{padding:6px 10px;font-size:10px;color:#8fa5c5;background:rgba(15,22,40,.95);border-top:1px solid rgba(80,160,255,.15);display:flex;justify-content:space-between;flex-shrink:0}
+  .pinch-val{color:#ffd16b;font-weight:700;font-variant-numeric:tabular-nums}
+  /* info modal */
+  #info{position:fixed;inset:0;z-index:50;background:rgba(3,6,14,.72);display:none;align-items:center;justify-content:center}
+  #info.show{display:flex}
+  #info .box{width:min(760px,92vw);max-height:84vh;overflow:auto;padding:22px 26px;font-size:13.5px;line-height:2;color:#d6deea}
+  #info h3{color:#9fd3ff;font-size:16px;margin:4px 0 6px}
+  #info .eq{direction:ltr;text-align:center;font-family:'Times New Roman',serif;font-size:15px;color:#ffd16b;background:rgba(20,30,52,.7);border-radius:8px;padding:6px;margin:6px 0}
+  #info table{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+  #info td,#info th{border:1px solid rgba(80,160,255,.2);padding:4px 6px;text-align:center}
+  #info th{background:rgba(11,117,117,.5)}
+  #info .close{float:left}
+  @media (max-width:1100px){#chart-panel,#legend{width:300px}#chart{height:180px}#panel{width:290px}#camera-panel{width:300px;height:175px;bottom:140px}}
+</style>
+</head>
+<body>
+<div id="canvas-host"></div>
+
+<div id="top-header">
+  <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <div class="bismillah-sub">هُوَ الْخَلَّاقُ الْعَلِيمُ</div>
+  <div class="divider"></div>
+  <h1>شبیه‌ساز سه‌بعدی نانوانبرک مخروطی ساخته‌شده از مواد تابعی — حل زندهٔ مسیر تعادل و کنترل اشاره‌ای</h1>
+  <div class="authors">یوسف کریمی &nbsp;·&nbsp; علی کوچی &nbsp;·&nbsp; مسعود گوهری‌منش</div>
+  <div class="uni">🎓 دانشگاه تربت حیدریه</div>
+</div>
+
+<!-- ===== Right panel ===== -->
+<div id="panel" class="glass">
+  <div class="sec">ولتاژ بی‌بعد <span style="font-weight:500;color:#8196b8;font-size:10.5px">β = √β²</span></div>
+  <div class="ctrl">
+    <label><span>β </span><span class="val" id="v-beta">0.000</span></label>
+    <input type="range" class="volt" id="s-beta" min="0" max="1.4" step="0.001" value="0">
+  </div>
+  <div id="status" class="stable">پایدار — قبل از Pull-In</div>
+  <div class="readout">
+    <div class="card"><div class="k">جابه‌جایی نوک هر بازو  w<sub>tip</sub></div><div class="v" id="v-wtip">0.000</div></div>
+    <div class="card"><div class="k">کمینهٔ شکاف بی‌بعد  1 − 2w<sub>tip</sub></div><div class="v" id="v-gap">1.000</div></div>
+    <div class="card"><div class="k">فاصلهٔ نوک‌ها (nm، با g₀ = ۱۰۰ nm)</div><div class="v" id="v-gapnm">100.0</div></div>
+    <div class="card"><div class="k">β / β<sub>PI</sub></div><div class="v" id="v-frac">0%</div></div>
+  </div>
+
+  <div class="sec">طرح‌های آماده</div>
+  <div class="presets">
+    <button data-p="paper" class="active">مقاله: FGM همگرا (n = ۰٫۵)</button>
+    <button data-p="ref2">همگن همگرا — مرجع [2]</button>
+    <button data-p="straight">همگن مستقیم (پایه)</button>
+    <button data-p="needle">FGM سوزنی (f_b → ۱)</button>
+    <button data-p="pinn">مدل PINN (با اثر سطح)</button>
+    <button data-p="diverg">همگن واگرا</button>
+  </div>
+
+  <div class="sec">پارامترهای طراحی</div>
+  <div class="ctrl"><label><span>پارامتر مخروطی‌شدن f<sub>b</sub></span><span class="val" id="v-fb">0.50</span></label><input type="range" id="s-fb" min="-1" max="0.95" step="0.01" value="0.5"></div>
+  <div class="ctrl"><label><span>نمایهٔ توانی FGM  n</span><span class="val" id="v-n">0.50</span></label><input type="range" id="s-n" min="-1" max="1" step="0.01" value="-0.301"></div>
+  <div class="ctrl"><label><span>نسبت مدول سرامیک به فلز E<sub>c</sub>/E<sub>m</sub></span><span class="val" id="v-Er">2.00</span></label><input type="range" id="s-Er" min="1" max="4" step="0.05" value="2"></div>
+  <div class="ctrl"><label><span>پارامتر اثر اندازه ξ</span><span class="val" id="v-xi">0.50</span></label><input type="range" id="s-xi" min="0" max="1" step="0.01" value="0.5"></div>
+  <div class="ctrl"><label><span>پارامتر کازیمیر α</span><span class="val" id="v-alpha">0.20</span></label><input type="range" id="s-alpha" min="0" max="0.6" step="0.01" value="0.2"></div>
+  <div class="ctrl"><label><span>اثر سطح e<sub>s</sub> = t<sub>s</sub></span><span class="val" id="v-es">0.00</span></label><input type="range" id="s-es" min="0" max="0.2" step="0.01" value="0"></div>
+
+  <div class="sec">نمای دوربین</div>
+  <div class="view-btns">
+    <button data-view="iso" class="active">ایزومتریک</button><button data-view="side">کناری</button><button data-view="front">جلو</button><button data-view="top">بالا</button><button data-view="gap">نوک</button>
+  </div>
+  <div class="sec">لایه‌های نمایش</div>
+  <div class="toggle-row"><span>رنگ‌بندی مواد تابعی (فلز ← سرامیک)</span><div class="switch on" id="t-fgm"></div></div>
+  <div class="toggle-row"><span>خطوط میدان الکترواستاتیک</span><div class="switch on" id="t-field"></div></div>
+  <div class="toggle-row"><span>پروفیل تیر (Wireframe)</span><div class="switch" id="t-wire"></div></div>
+  <div class="toggle-row"><span>چرخش خودکار</span><div class="switch" id="t-spin"></div></div>
+  <div class="toggle-row"><span>کنترل با اشارهٔ دست (MediaPipe)</span><div class="switch on" id="t-hand"></div></div>
+  <div class="sec">مسیر تعادل</div>
+  <button id="btn-sweep">▶ جاروب خودکار ولتاژ تا Pull-In</button>
+  <div style="height:6px"></div>
+  <button class="btn" id="btn-info" style="width:100%">ⓘ دربارهٔ مدل، روش حل و اعتبارسنجی</button>
+</div>
+
+<!-- ===== Left: equilibrium chart ===== -->
+<div id="chart-panel" class="glass">
+  <div class="ttl"><span>منحنی تعادل زنده  β – w<sub>tip</sub></span><span id="solve-time" style="font-size:10px;color:#8196b8;font-weight:500"></span></div>
+  <canvas id="chart"></canvas>
+  <div class="chartleg"><span><i style="background:#14a3a3"></i>شاخهٔ پایدار</span><span><i style="background:#14a3a3;opacity:.45"></i>شاخهٔ ناپایدار</span><span><i style="background:#f2a541"></i>نقطهٔ Pull-in</span><span><i style="background:#e85d75"></i>وضعیت فعلی</span><span id="pinn-leg" style="display:none"><i style="background:#ffd16b"></i>داده‌های PINN</span></div>
+  <div class="kp">
+    <div class="card hot"><div class="k">β<sub>PI</sub></div><div class="v" id="k-bpi">—</div></div>
+    <div class="card"><div class="k">w<sub>PI</sub></div><div class="v" id="k-wpi">—</div></div>
+    <div class="card"><div class="k">λ = 1 − 2w<sub>PI</sub></div><div class="v" id="k-lam">—</div></div>
+    <div class="card ok"><div class="k">دامنهٔ کاری</div><div class="v" id="k-rng">—</div></div>
+  </div>
+</div>
+
+<div id="legend" class="glass">
+  <b>راهنما</b>
+  <div id="fgmbar"></div>
+  <div class="lgrow"><span>ریشه (x = 0) — فلز</span><span>نوک (x = L) — سرامیک</span></div>
+  <div style="margin-top:4px">پایهٔ گیردار: <span style="color:#7b93d6">■</span> &nbsp; خطوط میدان: <span style="color:#f2a541">┊</span> &nbsp; حل: FEM هرمیتی، ۴۰ المان، کنترل جابه‌جایی</div>
+</div>
+
+<div id="hint"><kbd>Drag</kbd> چرخش &nbsp; <kbd>Scroll</kbd> زوم &nbsp; <kbd>←/→</kbd> ولتاژ &nbsp; <kbd>R</kbd> صفر &nbsp; <kbd>1–5</kbd> نما &nbsp; <kbd>I</kbd> راهنما</div>
+
+<div id="camera-panel" class="glass">
+  <div class="cam-header" id="cam-head"><span>📷 دوربین — تشخیص دست</span><span class="cam-status" id="cam-status">در حال راه‌اندازی...</span></div>
+  <div id="camera-wrap"><video id="webcam" autoplay playsinline muted></video><canvas id="overlay-canvas"></canvas></div>
+  <div class="cam-footer"><span>فاصلهٔ شست–اشاره: <span class="pinch-val" id="pinch-readout">—</span></span><span style="color:#607090">انگشتان نزدیک‌تر ⇐ ولتاژ بیشتر</span></div>
+</div>
+
+<div id="info"><div class="box glass">
+  <button class="btn close" id="info-close">✕ بستن</button>
+  <h3>مدل ریاضی</h3>
+  دو بازوی یکسرگیردار مخروطی با عرض b(X) = b₀(1 − f<sub>b</sub>X/L) و مدول تابعی E(X) = E<sub>m</sub> + (E<sub>c</sub> − E<sub>m</sub>)(X/L)<sup>n</sup>؛ اثر اندازه با نظریهٔ تنش جفت‌شدهٔ اصلاح‌شده، اثر سطح با گورتین–مورداخ، نیروی الکترواستاتیک با تصحیح میدان لبه‌ای و نیروی کازیمیر. معادلهٔ حاکم بی‌بعد:
+  <div class="eq">( A(x) w″ )″ − ( B(x) w′ )′ = α(1−f<sub>b</sub>x)/(1−2w)⁴ + β²(1−f<sub>b</sub>x)/(1−2w)² · [1 + 0.1575 η<sup>0.75</sup>((1−2w)/(1−f<sub>b</sub>x))<sup>0.75</sup> + 0.375 η<sup>0.5</sup>((1−2w)/(1−f<sub>b</sub>x))<sup>0.5</sup>]</div>
+  A(x) = (1+ξ)(E/E<sub>m</sub>)(1−f<sub>b</sub>x) + e<sub>s</sub>[3(1−f<sub>b</sub>x)+η] ، B(x) = t<sub>s</sub>(1−f<sub>b</sub>x) ، η = 0.2 ، ν = 0.3.
+  <h3>روش حل در این شبیه‌ساز</h3>
+  حل در خود مرورگر و در هر تغییر پارامتر انجام می‌شود: المان محدود با المان‌های هرمیتی مکعبی (۴۰ المان، شبکهٔ متراکم در ریشه، ۶ نقطهٔ گاوس) و نیوتن–رافسون با <b>کنترل جابه‌جایی نوک</b>: w<sub>tip</sub> گام‌به‌گام افزایش می‌یابد و β² مجهول است؛ بنابراین نقطهٔ بازگشت (Pull-in) بدون تکینگی عبور می‌شود و شاخهٔ ناپایدار نیز رسم می‌شود. β<sub>PI</sub> با برازش سهمی بر بیشینهٔ منحنی استخراج می‌شود.
+  <h3>اعتبارسنجی</h3>
+  <table>
+    <tr><th>حالت</th><th>این شبیه‌ساز</th><th>مرجع</th></tr>
+    <tr><td>همگن، f<sub>b</sub> = 0.5</td><td>β<sub>PI</sub> = 1.0801</td><td>≈ 1.08 (FEM، کوچی و یعقوبی [2])</td></tr>
+    <tr><td>FGM، n = 1 / 2 / 5</td><td>1.2021 / 1.1220 / 1.0852</td><td>GDQ مقاله: 1.2022 / 1.1223 / 1.0853</td></tr>
+    <tr><td>مدل PINN (e<sub>s</sub>=t<sub>s</sub>=0.1، ξ=0)</td><td>β²<sub>PI</sub> = 1.0192 ، w = 0.2027</td><td>PINN: 1.0192 ، 0.2025</td></tr>
+    <tr><td>FGM، n = 0.5</td><td>β<sub>PI</sub> = 1.3230</td><td>همگرا با ۱۰ تا ۱۶۰ المان (۶ رقم)</td></tr>
+  </table>
+  <b style="color:#ffce5f">نکتهٔ عددی:</b> برای n &lt; 1 شیب E(x) در ریشه بی‌نهایت است. در این حالت روش GDQ با فرم قوی معادله با افزایش N همگرا نمی‌شود (مقدار ۱٫۶۵۶ در N = 31 از کران فیزیکی انبرک تمام‌سرامیکی، یعنی ۱٫۶۳۴، بیشتر است). فرم ضعیف (FEM) در این شبیه‌ساز این مشکل را ندارد.
+</div></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+
+<script type="module">
+import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+window.__mp = { HandLandmarker, FilesetResolver };
+window.dispatchEvent(new Event('mp-ready'));
+</script>
+
+<script>
+/* Hermite-cubic FEM solver for the tapered FGM nano-tweezer (Eqs. 24-28),
+   displacement-controlled continuation (w_tip prescribed, beta^2 unknown). */
+function solveTweezer(p, opts) {
+  opts = opts || {};
+  const ne = opts.ne || 40, grade = opts.grade || 2, steps = opts.steps || 110, wmax = opts.wmax || 0.34;
+  const fb = p.fb, n = p.n, Er = p.Er, xi = p.xi, alpha = p.alpha, eta = p.eta, es = p.es || 0, ts = p.ts || 0;
+  const xn = new Float64Array(ne + 1); for (let i = 0; i <= ne; i++) xn[i] = Math.pow(i / ne, grade);
+  const gp = [-0.9324695142, -0.6612093865, -0.2386191861, 0.2386191861, 0.6612093865, 0.9324695142];
+  const gw = [0.1713244924, 0.3607615730, 0.4679139346, 0.4679139346, 0.3607615730, 0.1713244924];
+  const ng = gp.length, nd = 2 * (ne + 1);
+  const K = new Float64Array(nd * nd);
+  const EL = [];
+  for (let e = 0; e < ne; e++) {
+    const a = xn[e], h = xn[e + 1] - a;
+    const Ns = [], wts = [], ts_ = [];
+    const ke = new Float64Array(16);
+    for (let g = 0; g < ng; g++) {
+      const r = (gp[g] + 1) / 2, x = a + r * h, w = gw[g] * h / 2;
+      const E = 1 + (Er - 1) * Math.pow(x, n), t = 1 - fb * x;
+      const A = (1 + xi) * E * t + es * (3 * t + eta), B = ts * t;
+      const N = [1 - 3 * r * r + 2 * r * r * r, h * (r - 2 * r * r + r * r * r), 3 * r * r - 2 * r * r * r, h * (-r * r + r * r * r)];
+      const d1 = [(-6 * r + 6 * r * r) / h, 1 - 4 * r + 3 * r * r, (6 * r - 6 * r * r) / h, -2 * r + 3 * r * r];
+      const d2 = [(-6 + 12 * r) / (h * h), (-4 + 6 * r) / h, (6 - 12 * r) / (h * h), (-2 + 6 * r) / h];
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) ke[i * 4 + j] += (d2[i] * A * d2[j] + d1[i] * B * d1[j]) * w;
+      Ns.push(N); wts.push(w); ts_.push(t);
+    }
+    const dof = [2 * e, 2 * e + 1, 2 * e + 2, 2 * e + 3];
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) K[dof[i] * nd + dof[j]] += ke[i * 4 + j];
+    EL.push({ dof, Ns, wts, ts: ts_ });
+  }
+  const e75 = 0.1575 * Math.pow(eta, 0.75), e5 = 0.375 * Math.pow(eta, 0.5);
+  const nf = nd - 2, M = nf + 1, tipF = nd - 2 - 2; // index of tip w among free dofs
+  const Fc = new Float64Array(nd), Fe = new Float64Array(nd), KF = new Float64Array(nd * nd);
+  function load(u, b2) {
+    Fc.fill(0); Fe.fill(0); KF.fill(0);
+    for (const el of EL) {
+      const d = el.dof;
+      for (let g = 0; g < ng; g++) {
+        const N = el.Ns[g], t = el.ts[g], w8 = el.wts[g];
+        const w = N[0] * u[d[0]] + N[1] * u[d[1]] + N[2] * u[d[2]] + N[3] * u[d[3]];
+        const gg = 1 - 2 * w; if (gg <= 0) return false;
+        const q = gg / t, fr = 1 + e75 * Math.pow(q, 0.75) + e5 * Math.pow(q, 0.5);
+        const fe = t / (gg * gg) * fr, fc = alpha * t / Math.pow(gg, 4);
+        const dfr = (e75 * 0.75 * Math.pow(q, -0.25) + e5 * 0.5 * Math.pow(q, -0.5)) / t;
+        const dfe = t * (2 / (gg * gg * gg) * fr - dfr / (gg * gg)) * 2, dfc = alpha * t * 8 / Math.pow(gg, 5);
+        const kd = (dfc + b2 * dfe) * w8;
+        for (let i = 0; i < 4; i++) {
+          Fc[d[i]] += N[i] * fc * w8; Fe[d[i]] += N[i] * fe * w8;
+          for (let j = 0; j < 4; j++) KF[d[i] * nd + d[j]] += N[i] * kd * N[j];
+        }
+      }
+    }
+    return true;
+  }
+  function lsolve(A, b, m) { // Gaussian elimination with partial pivoting (in place)
+    for (let k = 0; k < m; k++) {
+      let piv = k, mx = Math.abs(A[k * m + k]);
+      for (let i = k + 1; i < m; i++) { const v = Math.abs(A[i * m + k]); if (v > mx) { mx = v; piv = i; } }
+      if (mx < 1e-300) return null;
+      if (piv !== k) { for (let j = 0; j < m; j++) { const t = A[k * m + j]; A[k * m + j] = A[piv * m + j]; A[piv * m + j] = t; } const t = b[k]; b[k] = b[piv]; b[piv] = t; }
+      const akk = A[k * m + k];
+      for (let i = k + 1; i < m; i++) {
+        const f = A[i * m + k] / akk; if (f === 0) continue;
+        for (let j = k; j < m; j++) A[i * m + j] -= f * A[k * m + j];
+        b[i] -= f * b[k];
+      }
+    }
+    for (let i = m - 1; i >= 0; i--) { let s = b[i]; for (let j = i + 1; j < m; j++) s -= A[i * m + j] * b[j]; b[i] = s / A[i * m + i]; }
+    return b;
+  }
+  const u = new Float64Array(nd); let b2 = 0; const path = [];
+  const J = new Float64Array(M * M), rhs = new Float64Array(M);
+  for (let s = 0; s < steps; s++) {
+    const wt = 1e-4 + (wmax - 1e-4) * s / (steps - 1);
+    if (s === 0) { for (let i = 0; i <= ne; i++) { u[2 * i] = xn[i] * xn[i] * wt; u[2 * i + 1] = 2 * xn[i] * wt; } }
+    else { const sc = wt / u[nd - 2]; for (let i = 0; i < nd; i++) u[i] *= sc; }
+    let ok = false;
+    for (let it = 0; it < 40; it++) {
+      if (!load(u, b2)) break;
+      J.fill(0);
+      for (let i = 0; i < nf; i++) {
+        const I = i + 2; let r = -Fc[I] - b2 * Fe[I];
+        for (let j = 0; j < nd; j++) r += K[I * nd + j] * u[j];
+        rhs[i] = -r;
+        for (let j = 0; j < nf; j++) J[i * M + j] = K[I * nd + j + 2] - KF[I * nd + j + 2];
+        J[i * M + nf] = -Fe[I];
+      }
+      J[nf * M + tipF] = 1; rhs[nf] = -(u[nd - 2] - wt);
+      const d = lsolve(J, rhs, M); if (!d) break;
+      let mx = 0; for (let i = 0; i < nf; i++) { u[i + 2] += d[i]; mx = Math.max(mx, Math.abs(d[i])); }
+      b2 += d[nf]; mx = Math.max(mx, Math.abs(d[nf]));
+      if (!isFinite(b2)) break;
+      if (mx < 1e-9 * (1 + Math.abs(b2))) { ok = true; break; }
+    }
+    if (!ok) break;
+    let minGap = 1; for (let i = 0; i <= ne; i++) minGap = Math.min(minGap, 1 - 2 * u[2 * i]);
+    if (minGap < 1e-3) break;
+    path.push({ wt, b2, u: Float64Array.from(u) });
+  }
+  // pull-in = max beta^2 (parabolic refinement)
+  let im = 0; for (let i = 1; i < path.length; i++) if (path[i].b2 > path[im].b2) im = i;
+  let bpi = path.length ? path[im].b2 : NaN, wpi = path.length ? path[im].wt : NaN, found = im > 0 && im < path.length - 1;
+  if (found) {
+    const x0 = path[im - 1].wt, x1 = path[im].wt, x2 = path[im + 1].wt, y0 = path[im - 1].b2, y1 = path[im].b2, y2 = path[im + 1].b2;
+    const den = (x0 - x1) * (x0 - x2) * (x1 - x2);
+    const A = (x2 * (y1 - y0) + x1 * (y0 - y2) + x0 * (y2 - y1)) / den, Bq = (x2 * x2 * (y0 - y1) + x1 * x1 * (y2 - y0) + x0 * x0 * (y1 - y2)) / den, Cq = (x1 * x2 * (x1 - x2) * y0 + x2 * x0 * (x2 - x0) * y1 + x0 * x1 * (x0 - x1) * y2) / den;
+    wpi = -Bq / (2 * A); bpi = A * wpi * wpi + Bq * wpi + Cq;
+  }
+  return { path, im, found, b2pi: bpi, betaPI: Math.sqrt(Math.max(bpi, 0)), wpi, xn: Array.from(xn), ne };
+}
+if (typeof module !== 'undefined') module.exports = { solveTweezer };
+
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============================================================
+   1) پارامترها و حل‌کننده
+   ============================================================ */
+const P = { fb: 0.5, n: 0.5, Er: 2, xi: 0.5, alpha: 0.2, eta: 0.2, es: 0, ts: 0 };
+const PRESETS = {
+  paper:   { fb: 0.5, n: 0.5, Er: 2, xi: 0.5, alpha: 0.2, es: 0 },
+  ref2:    { fb: 0.5, n: 1, Er: 1, xi: 0.5, alpha: 0.2, es: 0 },
+  straight:{ fb: 0.0, n: 1, Er: 1, xi: 0.5, alpha: 0.2, es: 0 },
+  needle:  { fb: 0.95, n: 0.5, Er: 2, xi: 0.5, alpha: 0.2, es: 0 },
+  pinn:    { fb: 0.5, n: 1, Er: 1, xi: 0.0, alpha: 0.2, es: 0.1 },
+  diverg:  { fb: -1, n: 1, Er: 1, xi: 0.5, alpha: 0.2, es: 0 },
+};
+const PINN_DATA = [[0.05,0.34979],[0.06,0.43385],[0.07,0.51225],[0.08,0.58500],[0.09,0.65210],[0.10,0.71353],[0.11,0.76994],[0.12,0.82021],[0.13,0.86486],[0.14,0.90409],[0.15,0.93763],[0.16,0.96532],[0.17,0.98753],[0.18,1.00393],[0.19,1.01434],[0.20,1.01899],[0.21,1.01754],[0.22,1.00993],[0.23,0.99600]];
+let SOL = null, showPinn = false;
+let state = { beta: 0, b2: 0, wtip: 0, pulled: false, snap: 0 };
+let curU = null;  // current nodal vector
+
+function runSolve() {
+  const st = document.getElementById('status');
+  const t0 = performance.now();
+  P.ts = P.es;
+  SOL = solveTweezer(P, { ne: 40, steps: 120, wmax: 0.36 });
+  const dt = performance.now() - t0;
+  document.getElementById('solve-time').textContent = `زمان حل: ${dt.toFixed(0)} ms`;
+  const ok = SOL.found && SOL.b2pi > 0;
+  document.getElementById('k-bpi').textContent = ok ? SOL.betaPI.toFixed(4) : '—';
+  document.getElementById('k-wpi').textContent = ok ? SOL.wpi.toFixed(4) : '—';
+  document.getElementById('k-lam').textContent = ok ? (1 - 2 * SOL.wpi).toFixed(4) : '—';
+  document.getElementById('k-rng').textContent = ok ? (200 * SOL.wpi).toFixed(2) + '%' : '—';
+  const s = document.getElementById('s-beta');
+  s.max = ok ? (SOL.betaPI * 1.06).toFixed(3) : 1;
+  rebuildGeometry();
+  setBeta(state.beta, true);
+}
+let solveTimer = null;
+function scheduleSolve() {
+  const st = document.getElementById('status'); st.className = 'busy'; st.textContent = 'در حال حل مسیر تعادل...';
+  clearTimeout(solveTimer); solveTimer = setTimeout(runSolve, 90);
+}
+
+// interpolate the stable branch at a given beta^2
+function stateAt(b2) {
+  const path = SOL.path, im = SOL.im;
+  if (!path.length) return null;
+  if (b2 <= path[0].b2) return { u: path[0].u, wt: path[0].wt };
+  for (let j = 0; j < im; j++) {
+    const a = path[j], b = path[j + 1];
+    if (b2 >= a.b2 && b2 <= b.b2) {
+      const t = (b2 - a.b2) / Math.max(b.b2 - a.b2, 1e-14);
+      const u = new Float64Array(a.u.length); for (let i = 0; i < u.length; i++) u[i] = a.u[i] + t * (b.u[i] - a.u[i]);
+      return { u, wt: a.wt + t * (b.wt - a.wt) };
+    }
+  }
+  return { u: path[im].u, wt: path[im].wt };
+}
+function wAt(u, x) { // Hermite interpolation
+  const xn = SOL.xn; let e = 0; while (e < SOL.ne - 1 && x > xn[e + 1]) e++;
+  const h = xn[e + 1] - xn[e], r = Math.min(1, Math.max(0, (x - xn[e]) / h));
+  return (1 - 3 * r * r + 2 * r * r * r) * u[2 * e] + h * (r - 2 * r * r + r * r * r) * u[2 * e + 1] + (3 * r * r - 2 * r * r * r) * u[2 * e + 2] + h * (-r * r + r * r * r) * u[2 * e + 3];
+}
+
+/* ============================================================
+   2) صحنهٔ سه‌بعدی
+   ============================================================ */
+const host = document.getElementById('canvas-host');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070b16);
+scene.fog = new THREE.FogExp2(0x070b16, 0.045);
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.05, 200);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+host.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.06; controls.minDistance = 0.8; controls.maxDistance = 14;
+
+scene.add(new THREE.HemisphereLight(0x9fb8ff, 0x10131c, 0.55));
+const key = new THREE.DirectionalLight(0xdfe9ff, 1.7); key.position.set(3, 6, 5); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 0.5, far: 20 }); scene.add(key);
+const rim = new THREE.DirectionalLight(0xff9a6c, 0.55); rim.position.set(-4, -2, -4); scene.add(rim);
+const fill = new THREE.PointLight(0x14a3a3, 1.0, 20); fill.position.set(1.2, 0.2, 2.5); scene.add(fill);
+const grid = new THREE.GridHelper(14, 28, 0x1a3050, 0x0f1a2c); grid.position.y = -1.1; scene.add(grid);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.35 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -1.1; ground.receiveShadow = true; scene.add(ground);
+
+// geometry scale: L = 2.2, gap g0 = 0.44, b0 = g0 (γ = 1), h = η b0
+const L = 2.2, G0 = 0.44, B0 = 0.44, NSEG = 90;
+const cMetal = new THREE.Color(0xb87333), cMid = new THREE.Color(0xe8e2d0), cCer = new THREE.Color(0x14a3a3);
+function fgmColor(x, n, Er, out) {
+  if (!showFGM || Er <= 1.0001) return out.set(0x5aa8e8);
+  const v = Math.pow(x, n);
+  if (v < 0.5) return out.copy(cMetal).lerp(cMid, v * 2);
+  return out.copy(cMid).lerp(cCer, (v - 0.5) * 2);
+}
+let showFGM = true, showField = true, showWire = false, autoSpin = false;
+// each arm: 4 faces × 2 verts per ring + caps, separate verts for crisp edges
+function makeArmGeo() {
+  const g = new THREE.BufferGeometry();
+  const nv = (NSEG + 1) * 8 + 8;
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+  const idx = [];
+  for (let i = 0; i < NSEG; i++) for (let f = 0; f < 4; f++) {
+    const a = i * 8 + f * 2, b = a + 1, c = a + 8, d = b + 8; idx.push(a, c, b, b, c, d);
+  }
+  const o = (NSEG + 1) * 8; idx.push(o, o + 1, o + 2, o, o + 2, o + 3, o + 4, o + 6, o + 5, o + 4, o + 7, o + 6);
+  g.setIndex(idx); return g;
+}
+const armMat = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.55, roughness: 0.32, side: THREE.DoubleSide, emissive: 0x000000 });
+const wireMat = new THREE.MeshBasicMaterial({ color: 0x9fd0ff, wireframe: true, transparent: true, opacity: 0.3 });
+const arms = [+1, -1].map(sgn => {
+  const geo = makeArmGeo(); const m = new THREE.Mesh(geo, armMat); m.castShadow = m.receiveShadow = true;
+  const w = new THREE.Mesh(geo, wireMat); w.visible = false; scene.add(m, w); return { sgn, geo, m, w };
+});
+const anchor = new THREE.Mesh(new THREE.BoxGeometry(0.22, G0 + 2 * 0.2 * B0 + 0.55, B0 * 1.25 + 0.6),
+  new THREE.MeshStandardMaterial({ color: 0x33477a, metalness: 0.5, roughness: 0.45, emissive: 0x0a1430, emissiveIntensity: 0.6 }));
+anchor.position.set(-0.11, 0, 0); anchor.castShadow = anchor.receiveShadow = true; scene.add(anchor);
+const tipMat = new THREE.MeshStandardMaterial({ color: 0xffe08a, emissive: 0xffaa00, emissiveIntensity: 1.3, metalness: 0.7, roughness: 0.25 });
+const tips = [new THREE.Mesh(new THREE.SphereGeometry(0.022, 20, 20), tipMat), new THREE.Mesh(new THREE.SphereGeometry(0.022, 20, 20), tipMat)];
+scene.add(...tips);
+// field lines
+const FL = 14, fieldLines = [];
+const fieldGroup = new THREE.Group(); scene.add(fieldGroup);
+for (let i = 0; i < FL; i++) {
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const ln = new THREE.Line(geo, new THREE.LineDashedMaterial({ color: 0xf2a541, dashSize: 0.025, gapSize: 0.018, transparent: true, opacity: 0.5 }));
+  ln.userData.s = (i + 0.7) / (FL + 0.2); fieldGroup.add(ln); fieldLines.push(ln);
+}
+// contact flash
+const flash = new THREE.PointLight(0xff4a4a, 0, 3); flash.position.set(L, 0, 0.2); scene.add(flash);
+
+const tmpC = new THREE.Color();
+function updateArms(u, extra) {
+  const h = P.eta * B0;
+  for (const A of arms) {
+    const pos = A.geo.attributes.position.array, col = A.geo.attributes.color.array;
+    let k = 0, kc = 0;
+    const put = (x, y, z, c) => { pos[k++] = x; pos[k++] = y; pos[k++] = z; col[kc++] = c.r; col[kc++] = c.g; col[kc++] = c.b; };
+    let last = null;
+    for (let i = 0; i <= NSEG; i++) {
+      const s = i / NSEG, X = s * L;
+      let w = u ? wAt(u, s) : 0; w = Math.min(0.5, w + extra * s * s * (3 - s) / 2);
+      const inner = A.sgn * (G0 / 2 - w * G0), outer = inner + A.sgn * h;
+      const yT = Math.max(inner, outer), yB = Math.min(inner, outer);
+      const hz = Math.max(0.006, B0 * (1 - P.fb * s)) / 2;
+      fgmColor(s, P.n, P.Er, tmpC);
+      // faces: top (+y), front (+z), bottom (-y), back (-z)
+      put(X, yT, -hz, tmpC); put(X, yT, hz, tmpC);
+      put(X, yT, hz, tmpC); put(X, yB, hz, tmpC);
+      put(X, yB, hz, tmpC); put(X, yB, -hz, tmpC);
+      put(X, yB, -hz, tmpC); put(X, yT, -hz, tmpC);
+      last = { X, yT, yB, hz, w };
+      if (i === 0) A.root = { yT, yB, hz };
+    }
+    const r0 = A.root; put(0, r0.yT, -r0.hz, tmpC); put(0, r0.yT, r0.hz, tmpC); put(0, r0.yB, r0.hz, tmpC); put(0, r0.yB, -r0.hz, tmpC);
+    put(last.X, last.yT, -last.hz, tmpC); put(last.X, last.yT, last.hz, tmpC); put(last.X, last.yB, last.hz, tmpC); put(last.X, last.yB, -last.hz, tmpC);
+    A.geo.attributes.position.needsUpdate = true; A.geo.attributes.color.needsUpdate = true;
+    A.geo.computeVertexNormals(); A.geo.computeBoundingSphere();
+    A.tipW = last.w;
+    const tipY = A.sgn * (G0 / 2 - last.w * G0);
+    tips[A.sgn > 0 ? 0 : 1].position.set(L + 0.012, tipY, 0);
+  }
+  for (const ln of fieldLines) {
+    const s = ln.userData.s; let w = u ? wAt(u, s) : 0; w = Math.min(0.5, w + extra * s * s * (3 - s) / 2);
+    const y = G0 / 2 - w * G0, p = ln.geometry.attributes.position;
+    p.setXYZ(0, s * L, y - 0.004, 0); p.setXYZ(1, s * L, -y + 0.004, 0); p.needsUpdate = true;
+    ln.computeLineDistances(); ln.geometry.computeBoundingSphere();
+  }
+}
+function rebuildGeometry() { updateArms(curU, 0); }
+
+/* ============================================================
+   3) وضعیت ولتاژ
+   ============================================================ */
+function setBeta(beta, force) {
+  if (!SOL) return;
+  const smax = parseFloat(document.getElementById('s-beta').max);
+  beta = Math.max(0, Math.min(smax, beta));
+  state.beta = beta; state.b2 = beta * beta;
+  const ok = SOL.found && SOL.b2pi > 0;
+  const wasPulled = state.pulled;
+  state.pulled = !ok || state.b2 >= SOL.b2pi;
+  if (!SOL.path.length) return;
+  const S = state.pulled ? { u: SOL.path[SOL.im].u, wt: SOL.wpi } : stateAt(state.b2);
+  curU = S.u; state.wtip = S.wt;
+  if (state.pulled && !wasPulled) { state.snap = 0; flash.intensity = 6; }
+  if (!state.pulled) state.snap = 0;
+  document.getElementById('s-beta').value = beta;
+  document.getElementById('v-beta').textContent = beta.toFixed(3) + '   (β² = ' + state.b2.toFixed(3) + ')';
+  updateReadouts();
+  if (!state.pulled) updateArms(curU, 0);
+  drawChart();
+}
+function updateReadouts() {
+  const w = state.pulled ? 0.5 : state.wtip, gap = Math.max(1 - 2 * w, 0);
+  document.getElementById('v-wtip').textContent = state.pulled ? 'تماس' : w.toFixed(4);
+  document.getElementById('v-gap').textContent = gap.toFixed(4);
+  document.getElementById('v-gapnm').textContent = (gap * 100).toFixed(1);
+  const fr = SOL && SOL.betaPI > 0 ? state.beta / SOL.betaPI : 0;
+  document.getElementById('v-frac').textContent = (fr * 100).toFixed(1) + '%';
+  const st = document.getElementById('status');
+  if (SOL && !(SOL.found && SOL.b2pi > 0)) { st.className = 'pulled'; st.textContent = '⚠ این طرح حتی بدون ولتاژ ناپایدار است (کازیمیر غالب)'; }
+  else if (state.pulled) { st.className = 'pulled'; st.textContent = '⚠ PULL-IN — بازوها به هم چسبیدند'; }
+  else if (fr > 0.95) { st.className = 'critical'; st.textContent = 'نزدیک Pull-In — ناحیهٔ بحرانی'; }
+  else { st.className = 'stable'; st.textContent = 'پایدار — قبل از Pull-In'; }
+  const inten = Math.min(1, fr);
+  const c = new THREE.Color(0x2a5a8a).lerp(new THREE.Color(0xffb347), Math.pow(inten, 1.4));
+  for (const ln of fieldLines) { ln.material.color.copy(c); ln.material.opacity = showField ? 0.25 + 0.65 * inten : 0; }
+  armMat.emissive.setRGB(0.35 * Math.pow(inten, 2), 0.12 * Math.pow(inten, 2), 0.02 * inten);
+  tipMat.emissiveIntensity = 1.2 + 3 * inten;
+}
+
+/* ============================================================
+   4) نمودار زندهٔ مسیر تعادل
+   ============================================================ */
+const cv = document.getElementById('chart'), cx = cv.getContext('2d');
+function drawChart() {
+  if (!SOL) return;
+  const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== W * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+  const m = { l: 46, r: 10, t: 10, b: 28 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const pts = SOL.path.filter(p => p.b2 > 0);
+  const xmax = 0.32, ymax = Math.max(0.5, (SOL.betaPI || 1) * 1.18);
+  const X = x => m.l + x / xmax * pw, Y = y => m.t + ph - y / ymax * ph;
+  cx.strokeStyle = 'rgba(120,150,190,0.15)'; cx.lineWidth = 1; cx.font = '10px Vazirmatn, sans-serif'; cx.fillStyle = '#8196b8';
+  cx.textAlign = 'center';
+  for (let i = 0; i <= 4; i++) { const x = i * 0.08; cx.beginPath(); cx.moveTo(X(x), m.t); cx.lineTo(X(x), m.t + ph); cx.stroke(); cx.fillText(x.toFixed(2), X(x), H - 12); }
+  const ystep = ymax > 1.6 ? 0.5 : 0.25; cx.textAlign = 'right';
+  for (let y = 0; y <= ymax + 1e-9; y += ystep) { cx.beginPath(); cx.moveTo(m.l, Y(y)); cx.lineTo(m.l + pw, Y(y)); cx.stroke(); cx.fillText(y.toFixed(2), m.l - 5, Y(y) + 3); }
+  cx.textAlign = 'center'; cx.fillText('w_tip', m.l + pw / 2, H - 1);
+  cx.save(); cx.translate(9, m.t + ph / 2); cx.rotate(-Math.PI / 2); cx.fillText('β', 0, 0); cx.restore();
+  // pull-in vertical marker
+  if (SOL.found) { cx.setLineDash([3, 4]); cx.strokeStyle = 'rgba(242,165,65,0.45)'; cx.beginPath(); cx.moveTo(X(SOL.wpi), m.t); cx.lineTo(X(SOL.wpi), m.t + ph); cx.stroke(); cx.setLineDash([]); }
+  const imv = SOL.path[SOL.im];
+  const draw = (arr, dash, alpha) => { cx.setLineDash(dash); cx.strokeStyle = `rgba(20,163,163,${alpha})`; cx.lineWidth = 2.6; cx.beginPath(); arr.forEach((p, i) => { const f = i ? 'lineTo' : 'moveTo'; cx[f](X(p.wt), Y(Math.sqrt(p.b2))); }); cx.stroke(); cx.setLineDash([]); };
+  draw(pts.filter(p => p.wt <= imv.wt), [], 1); draw(pts.filter(p => p.wt >= imv.wt), [6, 5], 0.5);
+  if (showPinn) { cx.fillStyle = '#ffd16b'; cx.strokeStyle = '#0f1b3d'; for (const [w, b2] of PINN_DATA) { cx.beginPath(); cx.arc(X(w), Y(Math.sqrt(b2)), 3.4, 0, 7); cx.fill(); cx.stroke(); } }
+  if (SOL.found && SOL.b2pi > 0) star(X(SOL.wpi), Y(SOL.betaPI), 8, '#f2a541');
+  const cw = state.pulled ? SOL.wpi : state.wtip, cb = state.pulled ? SOL.betaPI : state.beta;
+  cx.fillStyle = '#e85d75'; cx.beginPath(); cx.arc(X(cw), Y(cb), 5.5, 0, 7); cx.fill(); cx.strokeStyle = '#fff'; cx.lineWidth = 1.5; cx.stroke();
+}
+function star(x, y, r, c) { cx.fillStyle = c; cx.strokeStyle = '#0f1b3d'; cx.lineWidth = 1; cx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; cx[i ? 'lineTo' : 'moveTo'](x + rr * Math.cos(a), y + rr * Math.sin(a)); } cx.closePath(); cx.fill(); cx.stroke(); }
+
+/* ============================================================
+   5) MediaPipe — کنترل اشاره‌ای
+   ============================================================ */
+const videoEl = document.getElementById('webcam'), ov = document.getElementById('overlay-canvas'), octx = ov.getContext('2d');
+const camStatusEl = document.getElementById('cam-status'), pinchReadout = document.getElementById('pinch-readout');
+let handLandmarker = null, lastVideoTime = -1, pinchMin = 1.0, pinchMax = 0.02, handControlEnabled = true, lastHandT = 0, smoothNorm = 0;
+const CONN = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function drawHand(lm, w, h) {
+  octx.strokeStyle = 'rgba(120,200,255,0.75)'; octx.lineWidth = 1.8;
+  for (const [a, b] of CONN) { octx.beginPath(); octx.moveTo(lm[a].x * w, lm[a].y * h); octx.lineTo(lm[b].x * w, lm[b].y * h); octx.stroke(); }
+  for (let i = 0; i < lm.length; i++) { if (i === 4 || i === 8) continue; octx.beginPath(); octx.arc(lm[i].x * w, lm[i].y * h, 3, 0, 7); octx.fillStyle = 'rgba(180,220,255,0.9)'; octx.fill(); }
+  const t = lm[4], ix = lm[8];
+  octx.save(); octx.strokeStyle = '#ffd16b'; octx.lineWidth = 2.5; octx.setLineDash([6, 4]); octx.beginPath(); octx.moveTo(t.x * w, t.y * h); octx.lineTo(ix.x * w, ix.y * h); octx.stroke(); octx.restore();
+  for (const [p, c] of [[t, 'rgba(255,100,60,0.9)'], [ix, 'rgba(60,220,120,0.9)']]) { octx.beginPath(); octx.arc(p.x * w, p.y * h, 9, 0, 7); octx.fillStyle = c; octx.fill(); octx.strokeStyle = '#fff'; octx.lineWidth = 2; octx.stroke(); }
+}
+async function initMediaPipe() {
+  try {
+    if (!window.__mp) await new Promise(r => window.addEventListener('mp-ready', r, { once: true }));
+    const { HandLandmarker, FilesetResolver } = window.__mp;
+    const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    handLandmarker = await HandLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', delegate: 'GPU' },
+      runningMode: 'VIDEO', numHands: 1, minHandDetectionConfidence: 0.5, minHandPresenceConfidence: 0.5, minTrackingConfidence: 0.5 });
+    camStatusEl.textContent = 'مدل آماده'; camStatusEl.className = 'cam-status active';
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
+    videoEl.srcObject = stream;
+    videoEl.addEventListener('loadeddata', () => { ov.width = videoEl.videoWidth || 640; ov.height = videoEl.videoHeight || 480; camStatusEl.textContent = 'دوربین فعال'; requestAnimationFrame(predictLoop); });
+  } catch (err) {
+    console.warn('Hand control unavailable:', err);
+    camStatusEl.textContent = 'دوربین در دسترس نیست — کنترل با اسلایدر'; camStatusEl.className = 'cam-status error';
+  }
+}
+function predictLoop() {
+  if (handLandmarker && videoEl.videoWidth && videoEl.currentTime !== lastVideoTime) {
+    lastVideoTime = videoEl.currentTime;
+    try {
+      const res = handLandmarker.detectForVideo(videoEl, performance.now());
+      octx.clearRect(0, 0, ov.width, ov.height);
+      if (res.landmarks && res.landmarks.length) {
+        const lm = res.landmarks[0]; drawHand(lm, ov.width, ov.height);
+        const pinch = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+        pinchReadout.textContent = (pinch * 100).toFixed(1);
+        pinchMax = Math.max(pinchMax * 0.997, pinch); pinchMin = Math.min(pinchMin * 1.003, pinch);
+        if (handControlEnabled && !sweeping && SOL && SOL.found) {
+          lastHandT = performance.now();
+          let norm = (pinchMax - pinch) / Math.max(pinchMax - pinchMin, 1e-3); norm = Math.max(0, Math.min(1, norm));
+          smoothNorm += (norm - smoothNorm) * 0.35;
+          setBeta(Math.pow(smoothNorm, 0.85) * 1.03 * SOL.betaPI);
+        }
+      } else pinchReadout.textContent = '—';
+    } catch (e) { /* transient */ }
+  }
+  requestAnimationFrame(predictLoop);
+}
+initMediaPipe();
+document.getElementById('cam-head').addEventListener('click', () => document.getElementById('camera-panel').classList.toggle('min'));
+
+/* ============================================================
+   6) نماها، UI و صفحه‌کلید
+   ============================================================ */
+const views = { iso: [[3.2, 1.7, 3.0], [1.1, 0, 0]], side: [[1.1, 0.1, 4.0], [1.1, 0, 0]], front: [[4.6, 0.25, 0.05], [1.1, 0, 0]], top: [[1.1, 4.2, 0.05], [1.1, 0, 0]], gap: [[2.75, 0.25, 0.85], [2.05, 0, 0]] };
+let camAnim = null;
+function goToView(name) {
+  const v = views[name]; if (!v) return;
+  camAnim = { t: 0, from: camera.position.clone(), to: new THREE.Vector3(...v[0]), tf: controls.target.clone(), tt: new THREE.Vector3(...v[1]) };
+  document.querySelectorAll('.view-btns button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+}
+document.querySelectorAll('.view-btns button').forEach(b => b.addEventListener('click', () => goToView(b.dataset.view)));
+
+const sBeta = document.getElementById('s-beta');
+sBeta.addEventListener('input', e => { if (handActive()) { e.target.value = state.beta; return; } setBeta(parseFloat(e.target.value)); });
+function handActive() { return handControlEnabled && performance.now() - lastHandT < 1200; }
+
+const nFromSlider = v => Math.pow(10, v), sliderFromN = n => Math.log10(n);
+const PARAMS = [['fb', 's-fb', 'v-fb', v => v, v => v], ['n', 's-n', 'v-n', nFromSlider, sliderFromN], ['Er', 's-Er', 'v-Er', v => v, v => v], ['xi', 's-xi', 'v-xi', v => v, v => v], ['alpha', 's-alpha', 'v-alpha', v => v, v => v], ['es', 's-es', 'v-es', v => v, v => v]];
+function syncSliders() {
+  for (const [k, sid, vid, , inv] of PARAMS) { document.getElementById(sid).value = inv(P[k]); document.getElementById(vid).textContent = P[k].toFixed(2); }
+  document.getElementById('s-n').disabled = P.Er <= 1.0001;
+}
+for (const [k, sid, vid, fwd] of PARAMS) {
+  document.getElementById(sid).addEventListener('input', e => {
+    P[k] = fwd(parseFloat(e.target.value)); document.getElementById(vid).textContent = P[k].toFixed(2);
+    document.querySelectorAll('.presets button').forEach(b => b.classList.remove('active'));
+    showPinn = false; document.getElementById('pinn-leg').style.display = 'none';
+    document.getElementById('s-n').disabled = P.Er <= 1.0001;
+    scheduleSolve();
+  });
+}
+document.querySelectorAll('.presets button').forEach(b => b.addEventListener('click', () => {
+  Object.assign(P, PRESETS[b.dataset.p]); syncSliders();
+  document.querySelectorAll('.presets button').forEach(x => x.classList.toggle('active', x === b));
+  showPinn = b.dataset.p === 'pinn'; document.getElementById('pinn-leg').style.display = showPinn ? '' : 'none';
+  state.beta = 0; scheduleSolve();
+}));
+function bindSwitch(id, init, cb) { const el = document.getElementById(id); let on = init; el.classList.toggle('on', on); el.addEventListener('click', () => { on = !on; el.classList.toggle('on', on); cb(on); }); }
+bindSwitch('t-fgm', true, v => { showFGM = v; updateArms(curU, state.pulled ? state.snap : 0); });
+bindSwitch('t-field', true, v => { showField = v; fieldGroup.visible = v; });
+bindSwitch('t-wire', false, v => { showWire = v; arms.forEach(a => a.w.visible = v); });
+bindSwitch('t-spin', false, v => { autoSpin = v; });
+bindSwitch('t-hand', true, v => { handControlEnabled = v; });
+
+let sweeping = false; const btnSweep = document.getElementById('btn-sweep');
+btnSweep.addEventListener('click', () => {
+  if (sweeping) { sweeping = false; btnSweep.textContent = '▶ جاروب خودکار ولتاژ تا Pull-In'; return; }
+  if (!SOL || !SOL.found) return;
+  sweeping = true; btnSweep.textContent = '■ توقف'; let f = 0, hold = 0;
+  const step = () => {
+    if (!sweeping) return;
+    if (f < 1.03) { f += 0.004 * (f > 0.9 ? 0.5 : 1); setBeta(f * SOL.betaPI); }
+    else if (++hold > 80) { f = 0; hold = 0; setBeta(0); }
+    requestAnimationFrame(step);
+  };
+  step();
+});
+const info = document.getElementById('info');
+document.getElementById('btn-info').addEventListener('click', () => info.classList.add('show'));
+document.getElementById('info-close').addEventListener('click', () => info.classList.remove('show'));
+info.addEventListener('click', e => { if (e.target === info) info.classList.remove('show'); });
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  const d = SOL ? SOL.betaPI * 0.01 : 0.01;
+  if ((e.key === 'ArrowRight' || e.key === 'ArrowUp') && !handActive()) setBeta(state.beta + d);
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowDown') && !handActive()) setBeta(state.beta - d);
+  if (e.key === 'r' || e.key === 'R') setBeta(0);
+  if (e.key === 'i' || e.key === 'I') info.classList.toggle('show');
+  if (e.key === 'Escape') info.classList.remove('show');
+  const vk = { '1': 'iso', '2': 'side', '3': 'front', '4': 'top', '5': 'gap' }[e.key]; if (vk) goToView(vk);
+});
+
+/* ============================================================
+   7) حلقهٔ انیمیشن
+   ============================================================ */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  controls.update();
+  if (camAnim) {
+    camAnim.t = Math.min(1, camAnim.t + dt * 2.0); const k = camAnim.t < 0.5 ? 2 * camAnim.t ** 2 : 1 - (-2 * camAnim.t + 2) ** 2 / 2;
+    camera.position.lerpVectors(camAnim.from, camAnim.to, k); controls.target.lerpVectors(camAnim.tf, camAnim.tt, k); if (camAnim.t >= 1) camAnim = null;
+  }
+  if (autoSpin && !camAnim) {
+    const t = controls.target, dx = camera.position.x - t.x, dz = camera.position.z - t.z;
+    const a = Math.atan2(dz, dx) + dt * 0.25, r = Math.hypot(dx, dz);
+    camera.position.x = t.x + Math.cos(a) * r; camera.position.z = t.z + Math.sin(a) * r;
+  }
+  // pull-in snap animation: arms accelerate to contact
+  if (state.pulled && SOL) {
+    if (state.snap < 0.6) {
+      state.snap = Math.min(0.6, state.snap + dt * (0.6 + state.snap * 8));
+      updateArms(curU, state.snap);
+    }
+    flash.intensity *= 0.93;
+  } else flash.intensity = 0;
+  const t = performance.now() * 0.001;
+  if (showField) for (let i = 0; i < fieldLines.length; i++) fieldLines[i].material.dashOffset = -t * 0.08 * (1 + state.beta);
+  renderer.render(scene, camera);
+}
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); drawChart(); });
+
+/* ============================================================
+   8) راه‌اندازی
+   ============================================================ */
+syncSliders();
+camera.position.set(3.2, 1.7, 3.0); controls.target.set(1.1, 0, 0);
+runSolve();
+goToView('iso');
+animate();
+console.log('%c Nano-Tweezer FGM 3D Simulator — live FEM solver + MediaPipe', 'color:#8ecbff;font-weight:bold;font-size:14px');
+console.log('%c Yousef Karimi · Ali Koochi · Masoud Goharimanesh — University of Torbat Heydarieh', 'color:#5fdf95');
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Put the podcast for this model in this folder, named:
+
+    podcast.mp3      (also accepted: podcast.m4a .aac .ogg .opus .wav .webm)
+
+It is found automatically and plays on the gallery card, in the details panel
+and in the top bar of the model viewer. No code changes needed.

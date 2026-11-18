@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <radialGradient id="bg" cx=".5" cy=".55" r=".85"><stop offset="0" stop-color="#1e140c"/><stop offset=".65" stop-color="#0d0a08"/><stop offset="1" stop-color="#07080d"/></radialGradient>
+    <linearGradient id="arm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff8a3d"/><stop offset=".5" stop-color="#ffb35c"/><stop offset="1" stop-color="#ffd894"/></linearGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#ffbe82" stroke-opacity=".05"/></pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+    <radialGradient id="dot" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffd08f"/><stop offset="1" stop-color="#ff9e4a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/><rect width="800" height="500" fill="url(#grid)"/>
+  <!-- figure-eight path -->
+  <path d="M400 150 C 470 60, 600 70, 600 150 C 600 230, 470 240, 400 150 C 330 60, 200 70, 200 150 C 200 230, 330 240, 400 150 Z" fill="none" stroke="#47d3ff" stroke-opacity=".55" stroke-width="2" stroke-dasharray="6 7"/>
+  <!-- trail -->
+  <path d="M400 150 C 440 100, 520 70, 570 95 C 595 110, 601 135, 600 150" fill="none" stroke="#ffb066" stroke-width="5" stroke-linecap="round" opacity=".55" filter="url(#glow)"/>
+  <path d="M470 98 C 520 72, 575 85, 597 130" fill="none" stroke="#ffcf8a" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+  <!-- arm glow -->
+  <path d="M400 452 C 400 380, 330 350, 360 280 C 390 210, 560 230, 597 150" fill="none" stroke="#ff9e4a" stroke-opacity=".35" stroke-width="40" stroke-linecap="round" filter="url(#glow)"/>
+  <!-- tendons -->
+  <path d="M388 452 C 388 380, 318 352, 348 278 C 380 200, 552 222, 592 144" fill="none" stroke="#ff8a3d" stroke-width="1.6" opacity=".9"/>
+  <path d="M412 452 C 412 380, 342 348, 372 282 C 400 220, 568 238, 602 156" fill="none" stroke="#ffd894" stroke-width="1.6" opacity=".9"/>
+  <!-- spine -->
+  <path d="M400 452 C 400 380, 330 350, 360 280 C 390 210, 560 230, 597 150" fill="none" stroke="#f3e4d0" stroke-width="4" stroke-linecap="round"/>
+  <!-- vertebrae -->
+  <g stroke="#1a0f05" stroke-width="1.2">
+    <rect x="381" y="425" width="38" height="7" rx="2" fill="#ff8a3d"/>
+    <rect x="378" y="398" width="38" height="7" rx="2" fill="#ff8a3d" transform="rotate(8 397 401)"/>
+    <rect x="364" y="372" width="38" height="7" rx="2" fill="#ff8a3d" transform="rotate(20 383 375)"/>
+    <rect x="345" y="345" width="36" height="7" rx="2" fill="#ffb35c" transform="rotate(24 363 348)"/>
+    <rect x="335" y="314" width="35" height="7" rx="2" fill="#ffb35c" transform="rotate(6 352 317)"/>
+    <rect x="341" y="281" width="34" height="7" rx="2" fill="#ffb35c" transform="rotate(-22 358 284)"/>
+    <rect x="361" y="252" width="32" height="7" rx="2" fill="#ffb35c" transform="rotate(-40 377 255)"/>
+    <rect x="394" y="232" width="31" height="7" rx="2" fill="#ffd894" transform="rotate(-70 409 235)"/>
+    <rect x="433" y="222" width="30" height="7" rx="2" fill="#ffd894" transform="rotate(-82 448 225)"/>
+    <rect x="474" y="215" width="29" height="7" rx="2" fill="#ffd894" transform="rotate(-70 488 218)"/>
+    <rect x="514" y="203" width="28" height="7" rx="2" fill="#ffd894" transform="rotate(-55 528 206)"/>
+    <rect x="550" y="185" width="27" height="7" rx="2" fill="#ffd894" transform="rotate(-42 563 188)"/>
+  </g>
+  <!-- base -->
+  <rect x="340" y="452" width="120" height="30" rx="6" fill="#4a3828" stroke="#ffbe82" stroke-opacity=".35"/>
+  <circle cx="358" cy="467" r="4" fill="#c9b29a"/><circle cx="442" cy="467" r="4" fill="#c9b29a"/>
+  <!-- tip + target -->
+  <circle cx="597" cy="150" r="22" fill="url(#dot)"/>
+  <circle cx="600" cy="150" r="13" fill="none" stroke="#47d3ff" stroke-width="2"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="15">
+    <text x="34" y="466" fill="#ffd08f">θ = κL</text>
+    <text x="766" y="466" text-anchor="end" fill="#7a6d5e">∞ tracking</text>
+  </g>
+</svg>

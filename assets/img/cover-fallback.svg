@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs><radialGradient id="r" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="#1a2338"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+  <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".05"/></pattern></defs>
+  <rect width="800" height="500" fill="url(#r)"/><rect width="800" height="500" fill="url(#p)"/>
+  <text x="400" y="262" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="40" fill="#c2ccdb" fill-opacity=".6">interactive model</text>
+</svg>

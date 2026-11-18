@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrostatic Carbon-Nanowire Nanotweezer — Interactive 3D Digital Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#03070d; --panel:rgba(9,17,30,.78); --panel-solid:#0a1422; --line:rgba(120,180,255,.16); --line-strong:rgba(120,180,255,.32);
+  --text:#e6eef8; --muted:#8aa0b8; --dim:#5d728a;
+  --teal:#2dd4bf; --cyan:#38bdf8; --amber:#f8a917; --red:#ff5d5d; --violet:#a78bfa; --green:#4ade80;
+  --serif:'Times New Roman',Times,serif; --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block}
+.lbl{font:600 11px var(--sans);color:#dbeafe;padding:3px 8px;border-radius:6px;background:rgba(8,16,30,.72);border:1px solid var(--line-strong);white-space:nowrap;pointer-events:none;backdrop-filter:blur(6px)}
+.lbl.amber{color:#ffd58a;border-color:rgba(248,169,23,.45)}
+.lbl.red{color:#ffb4b4;border-color:rgba(255,93,93,.45)}
+
+/* header */
+#hdr{position:fixed;top:0;left:0;right:0;z-index:20;text-align:center;padding:8px 16px 18px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(3,7,13,.96) 0%,rgba(3,7,13,.7) 65%,rgba(3,7,13,0) 100%)}
+#hdr .bism{font-family:'Amiri',serif;font-weight:700;font-size:19px;color:#ffd16b;direction:rtl;text-shadow:0 0 18px rgba(255,209,107,.35)}
+#hdr .bism2{font-family:'Amiri',serif;font-size:13px;color:#e9bb5a;direction:rtl;margin-top:-2px}
+#hdr h1{font-family:var(--serif);font-size:19px;font-weight:700;color:#cfe6ff;margin-top:4px;letter-spacing:.2px}
+#hdr h1 span{color:var(--amber)}
+#hdr .auth{font-family:var(--serif);font-size:13px;color:#a9bfd8;margin-top:2px}
+#hdr .auth sup{color:var(--cyan);font-weight:700}
+#hdr .aff{font-family:var(--serif);font-size:11.5px;color:#7f97b3;margin-top:1px}
+
+/* panels */
+.panel{position:fixed;z-index:12;background:var(--panel);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);transition:opacity .35s,transform .35s}
+.panel .ph{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;cursor:pointer;user-select:none}
+.panel .ph h3{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#9cc7f2}
+.panel .ph .chev{color:var(--dim);font-size:12px;transition:transform .25s}
+.panel.collapsed .pb{display:none}
+.panel.collapsed .ph .chev{transform:rotate(-90deg)}
+.pb{padding:0 14px 14px}
+
+#ctrl{top:118px;right:16px;width:330px;max-height:calc(100vh - 134px);overflow-y:auto}
+#ctrl::-webkit-scrollbar{width:6px}#ctrl::-webkit-scrollbar-thumb{background:#1f3550;border-radius:3px}
+.sec{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.sec>.t{font-size:10.5px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+
+.vbig{display:flex;align-items:baseline;justify-content:space-between;margin:2px 0 8px}
+.vbig .num{font:700 34px var(--mono);color:#fff;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.vbig .num small{font-size:15px;color:var(--muted);margin-left:3px}
+.vbig .pct{font:600 12px var(--mono);color:var(--muted)}
+
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;outline:none;cursor:pointer;background:#16263b}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--cyan);box-shadow:0 0 12px rgba(56,189,248,.8)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--cyan)}
+#s-volt{height:10px;background:linear-gradient(90deg,#0e7490 0%,#22d3ee 55%,#f8a917 86%,#ff5d5d 91%,#7f1d1d 100%)}
+.ticks{display:flex;justify-content:space-between;font:500 10px var(--mono);color:var(--dim);margin-top:5px}
+.ticks b{color:var(--amber)}
+
+#status{margin-top:10px;font-size:12px;font-weight:700;text-align:center;padding:9px;border-radius:10px;letter-spacing:.4px;transition:.25s}
+.st-stable{background:rgba(45,212,191,.12);color:#5eead4;border:1px solid rgba(45,212,191,.35)}
+.st-near{background:rgba(248,169,23,.14);color:#ffd27a;border:1px solid rgba(248,169,23,.45)}
+.st-pull{background:rgba(255,93,93,.18);color:#ffb0b0;border:1px solid rgba(255,93,93,.55);animation:pulse .8s infinite alternate}
+.st-grasp{background:rgba(167,139,250,.16);color:#d6c9ff;border:1px solid rgba(167,139,250,.5)}
+@keyframes pulse{from{box-shadow:0 0 0 rgba(255,93,93,0)}to{box-shadow:0 0 22px rgba(255,93,93,.6)}}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.card{background:rgba(15,28,46,.75);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.card .k{font-size:9.5px;color:var(--muted);letter-spacing:.3px}
+.card .v{font:700 16px var(--mono);color:#cfe7ff;margin-top:3px;font-variant-numeric:tabular-nums}
+.card .v small{font-size:11px;color:var(--muted);font-weight:500}
+.card.hl .v{color:var(--amber)}
+.card.rd .v{color:#ff9a9a}
+
+.ctl{margin-bottom:11px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:#b8c9dd;margin-bottom:6px}
+.ctl label .val{font:700 11.5px var(--mono);color:var(--amber)}
+
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button,.btn{flex:1;min-width:54px;background:rgba(22,38,60,.85);color:#c4d5e8;border:1px solid var(--line-strong);border-radius:8px;padding:7px 6px;font:600 11px var(--sans);cursor:pointer;transition:.15s}
+.seg button:hover,.btn:hover{background:#1d3a5e;color:#fff}
+.seg button.on{background:linear-gradient(180deg,#0ea5e9,#0369a1);color:#fff;border-color:#38bdf8}
+.btn.primary{width:100%;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;border:none;padding:10px;font-size:12px}
+.btn.primary.run{background:linear-gradient(90deg,#b91c1c,#ef4444)}
+.row{display:flex;gap:6px}
+
+.tg{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#b8c9dd;margin-bottom:8px}
+.sw{position:relative;width:36px;height:20px;background:#13243a;border-radius:11px;cursor:pointer;border:1px solid var(--line-strong);flex-shrink:0;transition:.2s}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#5b6b80;transition:.2s}
+.sw.on{background:#0ea5e9}.sw.on::after{left:18px;background:#fff}
+.note{font-size:10px;line-height:1.5;color:var(--dim);margin-top:8px}
+.note b{color:var(--muted)}
+
+/* plot */
+#plotp{top:118px;left:16px;width:390px}
+#plot{width:100%;height:250px;display:block}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:var(--muted);margin-top:6px}
+.leg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+/* camera */
+#camp{left:16px;bottom:60px;width:300px;display:none}
+#camp.show{display:block}
+#camwrap{position:relative;height:190px;background:#000;border-radius:0 0 12px 12px;overflow:hidden}
+#webcam,#ov{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#camst{font:600 10px var(--sans);padding:2px 8px;border-radius:6px;background:rgba(248,169,23,.18);color:#ffd27a}
+#camst.ok{background:rgba(45,212,191,.18);color:#5eead4}#camst.err{background:rgba(255,93,93,.2);color:#ffb0b0}
+
+/* toolbar */
+#tools{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:14;display:flex;gap:6px;padding:7px;border-radius:14px;
+  background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line)}
+#tools button{position:relative;width:40px;height:40px;border-radius:10px;background:rgba(22,38,60,.85);border:1px solid var(--line-strong);color:#d8e8ff;font-size:17px;cursor:pointer;transition:.15s}
+#tools button:hover{background:#0ea5e9;color:#fff}
+#tools button.on{background:#0ea5e9;border-color:#7dd3fc;box-shadow:0 0 14px rgba(56,189,248,.55)}
+#tools button .tip{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:#0b1626;color:#e6eef8;font:500 10.5px var(--sans);
+  padding:4px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;border:1px solid var(--line-strong);transition:.15s}
+#tools button:hover .tip{opacity:1}
+#tools .sep{width:1px;background:var(--line);margin:4px 2px}
+
+#credit{position:fixed;right:16px;bottom:16px;z-index:11;font:500 11px var(--serif);color:#8fa6c0}
+#credit b{color:#ffd16b}
+
+/* HUD for presentation mode */
+#hud{position:fixed;left:50%;top:120px;transform:translateX(-50%);z-index:15;display:none;text-align:center;pointer-events:none}
+#hud .hv{font:700 54px var(--mono);color:#fff;text-shadow:0 0 30px rgba(56,189,248,.5)}
+#hud .hs{font:600 14px var(--sans);color:#9cc7f2;letter-spacing:2px;text-transform:uppercase}
+body.pres #ctrl,body.pres #plotp,body.pres #camp,body.pres #credit{opacity:0;pointer-events:none;transform:scale(.97)}
+body.pres #hud{display:block}
+
+/* flash on pull-in */
+#flash{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(circle at 60% 55%,rgba(255,120,80,.35),rgba(255,60,60,0) 60%);opacity:0;transition:opacity .5s}
+#flash.on{opacity:1;transition:none}
+
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;background:#0b1626;border:1px solid var(--line-strong);color:#e6eef8;
+  padding:12px 20px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+#toast.show{opacity:1}
+
+#tour{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(2,6,12,.72);backdrop-filter:blur(4px);padding:20px}
+#tour.show{display:flex}
+#tourbox{max-width:500px;background:#0a1422;border:1px solid var(--line-strong);border-radius:18px;padding:26px 28px;box-shadow:0 20px 70px rgba(0,0,0,.7)}
+#tourbox .stp{font:600 10.5px var(--sans);letter-spacing:1.5px;color:var(--dim);text-transform:uppercase}
+#tourbox h2{font-family:var(--serif);font-size:22px;color:#ffd16b;margin:6px 0 10px}
+#tourbox p{font-size:13.5px;line-height:1.7;color:#c8d9ec}
+#tourbox .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+#tourbox .acts .btn{flex:0 0 auto;padding:8px 16px}
+
+#loading{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--bg);transition:opacity .6s}
+#loading .sp{width:38px;height:38px;border:3px solid #13243a;border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite}
+#loading p{font-size:12px;color:var(--muted);letter-spacing:1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:1100px){#plotp{width:300px}#plot{height:200px}#ctrl{width:280px}}
+@media (max-width:800px){#plotp{display:none}#hdr .aff{display:none}#ctrl{top:100px;width:250px}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="sp"></div><p>LOADING 3D ENGINE…</p></div>
+<div id="stage"></div>
+<div id="flash"></div>
+
+<div id="hdr">
+  <div class="bism">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <div class="bism2">هُوَ الْخَلَّاقُ الْعَلِيمُ</div>
+  <h1>Electrostatic Carbon-Nanowire Nanotweezer — <span>Interactive 3D Digital Twin</span></h1>
+  <div class="auth">Faeze Kavianpour<sup>1</sup> · Mohammad Reza Gharib<sup>2*</sup> · Ali Koochi<sup>3*</sup> · Masoud Goharimanesh<sup>4</sup></div>
+  <div class="aff">Department of Mechanical Engineering, University of Torbat Heydarieh, Iran · 2nd Int. &amp; 8th National Conf. on Mechanical-Civil Eng. &amp; Advanced Technologies, University of Esfarayen</div>
+</div>
+
+<!-- Equilibrium plot -->
+<div class="panel" id="plotp">
+  <div class="ph"><h3>Equilibrium path · tip gap vs. voltage</h3><span class="chev">▾</span></div>
+  <div class="pb">
+    <canvas id="plot"></canvas>
+    <div class="leg">
+      <span><i style="background:#2dd4bf"></i>stable branch</span>
+      <span><i style="background:repeating-linear-gradient(90deg,#ff5d5d 0 4px,transparent 4px 7px)"></i>unstable branch</span>
+      <span><i style="background:#f8a917;width:8px;height:8px;border-radius:50%"></i>pull-in (model)</span>
+      <span><i style="background:#a78bfa;width:8px;height:8px"></i>3D COMSOL (99.4 V, 3.72 µm)</span>
+      <span><i style="background:#94a3b8;width:2px;height:10px"></i>experiment (101 V)</span>
+    </div>
+  </div>
+</div>
+
+<!-- Control panel -->
+<div class="panel" id="ctrl">
+  <div class="ph"><h3>Actuation</h3><span class="chev">▾</span></div>
+  <div class="pb">
+    <div class="vbig"><div class="num" id="o-v">0.0<small>V</small></div><div class="pct" id="o-pct">0 % of V<sub>PI</sub></div></div>
+    <input type="range" id="s-volt" min="0" max="110" step="0.1" value="0">
+    <div class="ticks"><span>0 V</span><b id="t-pi">V<sub>PI</sub> = 99.4 V</b><span id="t-max">110 V</span></div>
+    <div id="status" class="st-stable">STABLE · elastic force balances electrostatic force</div>
+
+    <div class="sec"><div class="t">Live readouts</div>
+      <div class="grid2">
+        <div class="card"><div class="k">Tip gap (surface-to-surface)</div><div class="v" id="o-gap">6.90 <small>µm</small></div></div>
+        <div class="card"><div class="k">Tip deflection · each arm</div><div class="v" id="o-w">0.00 <small>µm</small></div></div>
+        <div class="card"><div class="k">Electrostatic force · per arm</div><div class="v" id="o-f">0.0 <small>nN</small></div></div>
+        <div class="card"><div class="k">Stored field energy</div><div class="v" id="o-e">0.0 <small>fJ</small></div></div>
+        <div class="card hl"><div class="k">Pull-in voltage V<sub>PI</sub></div><div class="v" id="o-vpi">99.4 <small>V</small></div></div>
+        <div class="card rd"><div class="k">Gap at pull-in</div><div class="v" id="o-gpi">— <small>µm</small></div></div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="t">Automatic sweep</div>
+      <button class="btn primary" id="b-sweep">▶ Sweep up to pull-in and back (hysteresis)</button>
+    </div>
+
+    <div class="sec"><div class="t">Target micro-particle</div>
+      <div class="tg"><span>Show particle between the tips</span><div class="sw on" id="w-part"></div></div>
+      <div class="ctl"><label><span>Particle diameter φ<sub>p</sub></span> <span class="val" id="o-pd">5.00 µm</span></label>
+        <input type="range" id="s-pd" min="2.5" max="6.8" step="0.05" value="5"></div>
+    </div>
+
+    <div class="sec"><div class="t">Parametric study (recomputes the equilibrium path)</div>
+      <div class="ctl"><label>Nanowire length L <span class="val" id="o-L">19.6 µm</span></label><input type="range" id="s-L" min="12" max="30" step="0.1" value="19.6"></div>
+      <div class="ctl"><label>Diameter φ <span class="val" id="o-D">0.30 µm</span></label><input type="range" id="s-D" min="0.15" max="0.6" step="0.01" value="0.30"></div>
+      <div class="ctl"><label>Initial gap g₀ <span class="val" id="o-G">6.90 µm</span></label><input type="range" id="s-G" min="3" max="10" step="0.05" value="6.9"></div>
+      <div class="ctl"><label>Young's modulus E <span class="val" id="o-E">84.5 GPa</span></label><input type="range" id="s-E" min="20" max="400" step="0.5" value="84.5"></div>
+      <div class="row"><button class="btn" id="b-reset">↺ Benchmark (Chang et al., 2009)</button></div>
+    </div>
+
+    <div class="sec"><div class="t">Camera</div>
+      <div class="seg" id="views">
+        <button data-v="iso" class="on">3D</button><button data-v="top">Top</button><button data-v="side">Side</button><button data-v="tip">Tips</button><button data-v="end">End</button>
+      </div>
+    </div>
+
+    <div class="sec"><div class="t">Display layers</div>
+      <div class="tg"><span>Electric field lines &amp; charge flow</span><div class="sw on" id="w-field"></div></div>
+      <div class="tg"><span>Displacement colour map</span><div class="sw on" id="w-cmap"></div></div>
+      <div class="tg"><span>Labels &amp; scale bar</span><div class="sw on" id="w-lbl"></div></div>
+      <div class="tg"><span>Glow (bloom)</span><div class="sw on" id="w-bloom"></div></div>
+      <div class="tg"><span>Auto-rotate</span><div class="sw" id="w-spin"></div></div>
+      <div class="tg"><span>Deflection magnification</span>
+        <div class="seg" id="mag" style="width:140px"><button data-m="1" class="on">×1</button><button data-m="2">×2</button></div></div>
+    </div>
+
+    <div class="note"><b>Model.</b> Each arm is an Euler–Bernoulli cantilever (Hermite FEM, 24 elements) loaded by the exact force between two parallel cylinders,
+      f = πε₀V² / [2·arccosh²(d/2R)·√(d²−4R²)]. Tip-displacement control traces both the stable and the unstable branch; pull-in is the fold (dV/dw = 0).
+      Voltages are calibrated once (κ = <span id="o-k">—</span>, equivalent to an effective bending stiffness κ²·EI) to the 3D COMSOL pull-in of 99.4 V; the same κ is kept in the parametric study.</div>
+  </div>
+</div>
+
+<!-- Camera -->
+<div class="panel" id="camp">
+  <div class="ph"><h3>✋ Gesture control · right hand</h3><span id="camst">idle</span></div>
+  <div id="camwrap"><video id="webcam" autoplay playsinline muted></video><canvas id="ov"></canvas></div>
+</div>
+
+<div id="hud"><div class="hv" id="h-v">0.0 V</div><div class="hs" id="h-s">stable</div></div>
+
+<div id="tools">
+  <button id="t-snap">📷<span class="tip">Snapshot (PNG)</span></button>
+  <button id="t-csv">💾<span class="tip">Export equilibrium path (CSV)</span></button>
+  <div class="sep"></div>
+  <button id="t-cam">✋<span class="tip">Gesture control (webcam)</span></button>
+  <button id="t-pres">🎬<span class="tip">Presentation mode (P)</span></button>
+  <button id="t-full">⛶<span class="tip">Full screen (F)</span></button>
+  <button id="t-tour">❓<span class="tip">Guided tour</span></button>
+</div>
+<div id="credit">Interactive system designed by <b>Dr. Masoud Goharimanesh</b></div>
+<div id="toast"></div>
+
+<div id="tour"><div id="tourbox">
+  <div class="stp" id="tr-n">Step 1 / 5</div><h2 id="tr-h"></h2><p id="tr-p"></p>
+  <div class="acts"><button class="btn" id="tr-skip">Skip</button><button class="btn primary" style="width:auto" id="tr-next">Next →</button></div>
+</div></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+
+<script>
+/* Reduced-order model of a symmetric electrostatic nanotweezer.
+   Each arm: Euler–Bernoulli cantilever (Hermite cubic FEM).
+   Load: exact force per unit length between two parallel cylinders
+         f = π ε0 V² / ( 2 · arccosh²(d/2R) · sqrt(d² − 4R²) ),  d = d0 − 2w
+   Path following: tip-displacement control → full stable + unstable branch. */
+const EPS0 = 8.854e-12;
+
+function solveLinear(A, b) {            // Gaussian elimination, partial pivot (A: array of Float64Array rows)
+  const n = b.length;
+  for (let k = 0; k < n; k++) {
+    let p = k, mx = Math.abs(A[k][k]);
+    for (let i = k + 1; i < n; i++) { const v = Math.abs(A[i][k]); if (v > mx) { mx = v; p = i; } }
+    if (p !== k) { const t = A[k]; A[k] = A[p]; A[p] = t; const tb = b[k]; b[k] = b[p]; b[p] = tb; }
+    const akk = A[k][k];
+    for (let i = k + 1; i < n; i++) {
+      const f = A[i][k] / akk; if (f === 0) continue;
+      const Ai = A[i], Ak = A[k];
+      for (let j = k; j < n; j++) Ai[j] -= f * Ak[j];
+      b[i] -= f * b[k];
+    }
+  }
+  const x = new Float64Array(n);
+  for (let i = n - 1; i >= 0; i--) {
+    let s = b[i]; const Ai = A[i];
+    for (let j = i + 1; j < n; j++) s -= Ai[j] * x[j];
+    x[i] = s / Ai[i];
+  }
+  return x;
+}
+
+function computeEquilibriumPath({ E = 84.5e9, D = 0.3e-6, L = 19.6e-6, g0 = 6.9e-6, N = 24, steps = 110, maxFrac = 0.485 } = {}) {
+  const R = D / 2, EI = E * Math.PI * D ** 4 / 64, h = L / N, ndof = 2 * (N + 1), d0 = g0 + 2 * R;
+  const nf = ndof - 2;                                   // free dofs (node 0 clamped)
+  const ke = [[12, 6 * h, -12, 6 * h], [6 * h, 4 * h * h, -6 * h, 2 * h * h], [-12, -6 * h, 12, -6 * h], [6 * h, 2 * h * h, -6 * h, 4 * h * h]]
+    .map(r => r.map(v => v * EI / h ** 3));
+  const fh = w => { const d = Math.max(d0 - 2 * w, 2 * R * 1.00001); const a = Math.acosh(d / (2 * R)); return Math.PI * EPS0 / (2 * a * a * Math.sqrt(d * d - 4 * R * R)); };
+  const gp = [-1 / Math.sqrt(3), 1 / Math.sqrt(3)];
+  const shp = s => [1 - 3 * s * s + 2 * s ** 3, h * (s - 2 * s * s + s ** 3), 3 * s * s - 2 * s ** 3, h * (-s * s + s ** 3)];
+  const SH = gp.map(xi => shp((xi + 1) / 2));
+  const u = new Float64Array(ndof);
+  let lam = 0;                                           // λ = V²
+  const out = [];
+  const tipIdx = ndof - 2;                               // global index of tip deflection
+  for (let st = 1; st <= steps; st++) {
+    const wt = g0 * maxFrac * Math.pow(st / steps, 1.15);
+    // predictor: scale current shape
+    if (st > 1 && u[tipIdx] > 0) { const sc = wt / u[tipIdx]; for (let i = 0; i < ndof; i++) u[i] *= sc; }
+    else for (let e = 0; e <= N; e++) { const s = e / N; u[2 * e] = wt * 0.5 * (3 * s * s - s ** 3); u[2 * e + 1] = wt * 0.5 * (6 * s - 3 * s * s) / L; }
+    let ok = false;
+    for (let it = 0; it < 60; it++) {
+      const F = new Float64Array(ndof), Kt = Array.from({ length: ndof }, () => new Float64Array(ndof)), K = Array.from({ length: ndof }, () => new Float64Array(ndof));
+      for (let e = 0; e < N; e++) {
+        const idx = [2 * e, 2 * e + 1, 2 * e + 2, 2 * e + 3];
+        for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) K[idx[a]][idx[b]] += ke[a][b];
+        for (const Nn of SH) {
+          let w = 0; for (let a = 0; a < 4; a++) w += Nn[a] * u[idx[a]];
+          const f = fh(w), df = (fh(w + 1e-12) - fh(w - 1e-12)) / 2e-12;
+          for (let a = 0; a < 4; a++) {
+            F[idx[a]] += Nn[a] * f * h / 2;
+            for (let b = 0; b < 4; b++) Kt[idx[a]][idx[b]] += Nn[a] * Nn[b] * df * h / 2;
+          }
+        }
+      }
+      // residual & Jacobian on free dofs + constraint
+      const n = nf + 1, J = Array.from({ length: n }, () => new Float64Array(n)), r = new Float64Array(n);
+      for (let i = 0; i < nf; i++) {
+        const gi = i + 2; let Ku = 0;
+        for (let j = 0; j < ndof; j++) Ku += K[gi][j] * u[j];
+        r[i] = -(Ku - lam * F[gi]);
+        for (let j = 0; j < nf; j++) J[i][j] = K[gi][j + 2] - lam * Kt[gi][j + 2];
+        J[i][nf] = -F[gi];
+      }
+      J[nf][tipIdx - 2] = 1; r[nf] = -(u[tipIdx] - wt);
+      // scale rows for conditioning
+      for (let i = 0; i < n; i++) { let m = 0; for (let j = 0; j < n; j++) m = Math.max(m, Math.abs(J[i][j])); if (m > 0) { for (let j = 0; j < n; j++) J[i][j] /= m; r[i] /= m; } }
+      const dx = solveLinear(J, r);
+      let mx = 0;
+      for (let i = 0; i < nf; i++) { u[i + 2] += dx[i]; if (i % 2 === 0) mx = Math.max(mx, Math.abs(dx[i])); }
+      lam += dx[nf];
+      if (mx < 1e-9 * wt && Math.abs(dx[nf]) < 1e-9 * Math.max(Math.abs(lam), 1)) { ok = true; break; }
+    }
+    if (!ok || lam < 0) break;
+    const shape = new Float64Array(N + 1);
+    for (let e = 0; e <= N; e++) shape[e] = u[2 * e] / wt;  // normalized (tip = 1)
+    out.push({ wTip: wt, V: Math.sqrt(lam), shape });
+  }
+  // locate pull-in (max V)
+  let iPI = 0; for (let i = 1; i < out.length; i++) if (out[i].V > out[iPI].V) iPI = i;
+  return { points: out, iPI, N, params: { E, D, L, g0 } };
+}
+
+
+
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+
+/* =========================================================
+   1) PHYSICS — reduced-order model + calibration
+   ========================================================= */
+const BENCH = { L: 19.6, D: 0.30, G: 6.90, E: 84.5 };      // Chang et al. (2009)
+const VPI_FEM = 99.4, GAP_FEM = 3.72, VPI_EXP = 101.0;     // present 3D COMSOL model, experiment
+const P = { ...BENCH };
+let path = null, KAPPA = 1;
+
+function pathFor(p){
+  return computeEquilibriumPath({ E: p.E*1e9, D: p.D*1e-6, L: p.L*1e-6, g0: p.G*1e-6, N: 24, steps: 120 });
+}
+function refinePI(pts, i){                                  // parabolic refinement of the fold
+  if (i <= 0 || i >= pts.length-1) return { V: pts[i].V, w: pts[i].wTip };
+  const a = pts[i-1], b = pts[i], c = pts[i+1];
+  const x0=a.wTip,x1=b.wTip,x2=c.wTip,y0=a.V,y1=b.V,y2=c.V;
+  const den=(x0-x1)*(x0-x2)*(x1-x2); if (!den) return { V:y1, w:x1 };
+  const A=(x2*(y1-y0)+x1*(y0-y2)+x0*(y2-y1))/den, B=(x2*x2*(y0-y1)+x1*x1*(y2-y0)+x0*x0*(y1-y2))/den, C=(x1*x2*(x1-x2)*y0+x2*x0*(x2-x0)*y1+x0*x1*(x0-x1)*y2)/den;
+  if (A >= 0) return { V:y1, w:x1 };
+  const xv=-B/(2*A); return { V: C - B*B/(4*A), w: xv };
+}
+// table in display units (µm, calibrated V)
+let T = null;   // {w:[], V:[], shapes:[], iPI, VPI, wPI, Vrel}
+function buildTable(){
+  path = pathFor(P);
+  const pts = path.points;
+  const pi = refinePI(pts, path.iPI);
+  const w = [0], V = [0], shapes = [pts[0].shape];
+  for (const q of pts){ w.push(q.wTip*1e6); V.push(q.V*KAPPA); shapes.push(q.shape); }
+  const iPI = path.iPI + 1;
+  // contact point (tips touch): extrapolate to w = g0/2
+  w.push(P.G/2); V.push(V[V.length-1]*0.96); shapes.push(pts[pts.length-1].shape);
+  T = { w, V, shapes, iPI, VPI: pi.V*KAPPA, wPI: pi.w*1e6, Vrel: V[V.length-2] };
+}
+function calibrate(){
+  const b = pathFor(BENCH); const pi = refinePI(b.points, b.iPI);
+  KAPPA = VPI_FEM / pi.V;
+  $('o-k').textContent = KAPPA.toFixed(3);
+}
+
+/* state */
+const S = { V: 0, wTip: 0, shapeA: null, shapeB: null, mix: 0, collapsed: false, anim: null, grasped: false, idx: 0 };
+function stableState(V){
+  // interpolate on stable branch 0..iPI
+  const { w, V: Vs, shapes, iPI } = T;
+  if (V <= 0) return { w: 0, a: shapes[0], b: shapes[0], m: 0, i: 0 };
+  for (let i = 0; i < iPI; i++){
+    if (V >= Vs[i] && V <= Vs[i+1]){
+      const m = (V - Vs[i]) / Math.max(Vs[i+1]-Vs[i], 1e-9);
+      return { w: w[i] + m*(w[i+1]-w[i]), a: shapes[i], b: shapes[i+1], m, i };
+    }
+  }
+  return { w: w[iPI], a: shapes[iPI], b: shapes[iPI], m: 0, i: iPI };
+}
+function pathState(t){             // t ∈ [0,1] from pull-in to contact along the unstable branch
+  const { w, shapes, iPI } = T; const n = w.length-1;
+  const f = iPI + t*(n - iPI); const i = Math.min(Math.floor(f), n-1); const m = f - i;
+  return { w: w[i] + m*(w[i+1]-w[i]), a: shapes[i], b: shapes[i+1], m };
+}
+
+/* =========================================================
+   2) RENDERER / SCENE
+   ========================================================= */
+const host = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+
+const labelR = new CSS2DRenderer();
+labelR.setSize(innerWidth, innerHeight);
+Object.assign(labelR.domElement.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: 5 });
+document.body.appendChild(labelR.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x03070d);
+scene.fog = new THREE.Fog(0x03070d, 60, 140);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 500);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.07; controls.minDistance = 4; controls.maxDistance = 120;
+
+scene.add(new THREE.HemisphereLight(0x9cc7ff, 0x0a0f18, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(14, 30, 18); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90 });
+key.shadow.bias = -0.0005; key.shadow.camera.updateProjectionMatrix();
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x38bdf8, 1.0); rim.position.set(-20, 8, -16); scene.add(rim);
+const warm = new THREE.PointLight(0xffa64d, 0, 30, 1.6); scene.add(warm);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.55, 0.82);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+let bloomOn = true;
+
+/* ---------- static chip geometry (1 unit = 1 µm) ---------- */
+const chip = new THREE.Group(); scene.add(chip);
+const matSi   = new THREE.MeshPhysicalMaterial({ color: 0x1b2533, metalness: 0.35, roughness: 0.42, clearcoat: 0.6, clearcoatRoughness: 0.35 });
+const matOx   = new THREE.MeshPhysicalMaterial({ color: 0x2b4a6f, metalness: 0.0, roughness: 0.15, transmission: 0.0, clearcoat: 1, clearcoatRoughness: 0.1 });
+const matAu   = new THREE.MeshStandardMaterial({ color: 0xf2c46b, metalness: 1.0, roughness: 0.22 });
+const matElecSi = new THREE.MeshStandardMaterial({ color: 0x31465f, metalness: 0.4, roughness: 0.35 });
+let chipParts = [];
+function box(w, h, d, mat){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.castShadow = m.receiveShadow = true; return m; }
+function rebuildChip(){
+  for (const o of chipParts) { chip.remove(o); o.geometry?.dispose(); }
+  chipParts = [];
+  const c0 = P.G/2 + P.D/2, L = P.L;
+  const wE = 9, hE = 2.4, dE = 5.2;          // electrode blocks
+  // handle wafer with trench beneath the free-standing wires
+  const sub = box(wE + 4, 1.2, 2*c0 + 2*dE + 10, matSi); sub.position.set(-(wE+4)/2, -hE - 0.6 - 0.25, 0); chipParts.push(sub);
+  const floor = box(L + 14, 0.6, 2*c0 + 2*dE + 10, matSi); floor.position.set((L+14)/2 - 0.0, -hE - 6.5, 0); chipParts.push(floor);
+  const ox = box(wE + 4, 0.25, 2*c0 + 2*dE + 10, matOx); ox.position.set(-(wE+4)/2, -hE - 0.125, 0); chipParts.push(ox);
+  for (const s of [+1, -1]){
+    const e = box(wE, hE, dE, matElecSi); e.position.set(-wE/2, -hE/2, s*(c0 + dE/2 - 0.9)); chipParts.push(e);
+    const au = box(wE - 0.6, 0.18, dE - 0.6, matAu); au.position.set(-wE/2 - 0.3, 0.09, s*(c0 + dE/2 - 0.9)); chipParts.push(au);
+    // FIB-CVD root (wire foot)
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(P.D*1.3, P.D*2.2, 0.9, 20), matCarbon);
+    foot.rotation.z = Math.PI/2; foot.position.set(0.3, 0, s*c0); foot.castShadow = true; chipParts.push(foot);
+  }
+  chipParts.forEach(o => chip.add(o));
+}
+
+/* ---------- nanowires ---------- */
+const matCarbon = new THREE.MeshPhysicalMaterial({ color: 0x9aa7b8, metalness: 0.55, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.2, vertexColors: true, emissive: 0x000000 });
+const TUBE_SEG = 140, RAD_SEG = 18;
+const wires = [+1, -1].map(s => {
+  const m = new THREE.Mesh(new THREE.BufferGeometry(), matCarbon.clone());
+  m.castShadow = true; m.userData.s = s; scene.add(m); return m;
+});
+const tips = [+1, -1].map(s => {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshStandardMaterial({ color: s > 0 ? 0xffd58a : 0xffb08a, emissive: s > 0 ? 0xffa000 : 0xff5a1f, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.25 }));
+  scene.add(m); return m;
+});
+
+function turbo(t){   // Google Turbo colormap (polynomial fit)
+  t = Math.min(1, Math.max(0, t));
+  const r = 0.13572138 + t*(4.61539260 + t*(-42.66032258 + t*(132.13108234 + t*(-152.94239396 + t*59.28637943))));
+  const g = 0.09140261 + t*(2.19418839 + t*(4.84296658 + t*(-14.18503333 + t*(4.27729857 + t*2.82956604))));
+  const b = 0.10667330 + t*(12.64194608 + t*(-60.58204836 + t*(110.36276771 + t*(-89.90310912 + t*27.34824973))));
+  return [Math.min(1,Math.max(0,r)), Math.min(1,Math.max(0,g)), Math.min(1,Math.max(0,b))];
+}
+let showCmap = true, MAG = 1;
+function nodalShape(){            // normalized shape at N+1 nodes
+  const a = S.shapeA, b = S.shapeB, m = S.mix, n = a.length, out = new Float64Array(n);
+  for (let i = 0; i < n; i++) out[i] = a[i] + m*(b[i]-a[i]);
+  return out;
+}
+function deflAt(sh, s){           // s ∈ [0,1]
+  const n = sh.length - 1, f = s*n, i = Math.min(Math.floor(f), n-1), m = f - i;
+  return sh[i] + m*(sh[i+1]-sh[i]);
+}
+let curDefl = null;               // function x(µm) → w(µm)
+function rebuildWires(){
+  const sh = nodalShape();
+  let w = S.wTip;
+  // particle constraint (grasp)
+  S.grasped = false;
+  if (showParticle && !S.collapsed){
+    const xp = particleX(); const sp = xp / P.L;
+    const gapP = P.G - 2*w*deflAt(sh, sp)*MAG;
+    if (gapP < PD){ w = (P.G - PD) / (2*deflAt(sh, sp)*MAG); S.grasped = true; }
+  }
+  const wDisp = w * MAG, c0 = P.G/2 + P.D/2, R = P.D/2;
+  curDefl = x => wDisp * deflAt(sh, Math.min(1, Math.max(0, x / P.L)));
+  for (const mesh of wires){
+    const s = mesh.userData.s, pts = [];
+    for (let i = 0; i <= 48; i++){ const x = P.L*i/48; pts.push(new THREE.Vector3(x, 0, s*(c0 - curDefl(x)))); }
+    const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), TUBE_SEG, R, RAD_SEG, false);
+    const col = new Float32Array(g.attributes.position.count*3);
+    for (let i = 0; i <= TUBE_SEG; i++){
+      const x = P.L*i/TUBE_SEG; const t = showCmap ? curDefl(x) / Math.max(P.G/2*0.55, 1e-6) : -1;
+      const c = t < 0 ? [0.62, 0.66, 0.72] : turbo(0.08 + 0.9*t);
+      for (let j = 0; j <= RAD_SEG; j++){ const k = (i*(RAD_SEG+1)+j)*3; col[k]=c[0]; col[k+1]=c[1]; col[k+2]=c[2]; }
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    mesh.geometry.dispose(); mesh.geometry = g;
+  }
+  tips.forEach((t, k) => { const s = k === 0 ? 1 : -1; t.scale.setScalar(R*1.25); t.position.set(P.L, 0, s*(c0 - curDefl(P.L))); });
+  S.wShown = w;
+}
+
+/* ---------- target particle ---------- */
+let showParticle = true, PD = 5.0;
+const particle = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), new THREE.MeshPhysicalMaterial({ color: 0x9fd8ff, roughness: 0.08, metalness: 0, transmission: 0.55, thickness: 1.5, ior: 1.45, clearcoat: 1, transparent: true, opacity: 0.92 }));
+particle.castShadow = true; scene.add(particle);
+function particleX(){ return Math.max(P.L - PD*0.5 - 0.4, P.L*0.6); }
+function placeParticle(){ particle.scale.setScalar(PD/2 - P.D*0.02); particle.position.set(particleX(), 0, 0); particle.visible = showParticle; }
+
+/* ---------- electric field lines (exact 2D bipolar field in each cross-section) ---------- */
+const fieldGroup = new THREE.Group(); scene.add(fieldGroup);
+const NSEC = 9, BULGE = [0, 0.7, 1.6, 2.9, 4.6, -0.7, -1.6, -2.9, -4.6], NP = 40;
+const fieldMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, depthWrite: false });
+const fieldLines = [];
+for (let k = 0; k < NSEC; k++) for (const b of BULGE){
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NP*3), 3));
+  const l = new THREE.Line(g, fieldMat); l.userData = { k, b }; l.frustumCulled = false; fieldGroup.add(l); fieldLines.push(l);
+}
+// charge "flow" sprites travelling along the field lines
+const NCH = fieldLines.length * 2;
+const chGeo = new THREE.BufferGeometry(); chGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NCH*3), 3));
+const chTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  const g = x.createRadialGradient(32,32,0,32,32,32); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.3,'rgba(255,200,120,.9)'); g.addColorStop(1,'rgba(255,120,40,0)');
+  x.fillStyle = g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+const chMat = new THREE.PointsMaterial({ size: 0.42, map: chTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xffc27a });
+const charges = new THREE.Points(chGeo, chMat); charges.frustumCulled = false; scene.add(charges);
+const chPhase = Float32Array.from({ length: NCH }, () => Math.random());
+let showField = true;
+
+function arcPoint(b, a, R, t, out){
+  // field line between line charges at z=±a (y=0) in the y–z plane; bulge height b (signed)
+  const zs = a - R*1.05, ze = -a + R*1.05;
+  if (Math.abs(b) < 1e-3){ out.y = 0; out.z = zs + (ze - zs)*t; return; }
+  const B = Math.abs(b), yc = (B*B - a*a)/(2*B), r = B - yc;
+  const th0 = Math.atan2(-yc, a), th1 = Math.atan2(-yc, -a);
+  // shrink arc slightly to start at the wire surface
+  const dth = (R*1.05)/r;
+  const ta = th0 + dth, tb = th1 - dth, th = ta + (tb - ta)*t;
+  out.z = r*Math.cos(th); out.y = Math.sign(b)*(yc + r*Math.sin(th));
+}
+function updateField(){
+  const c0 = P.G/2 + P.D/2, R = P.D/2, tmp = { y: 0, z: 0 };
+  for (const l of fieldLines){
+    const { k, b } = l.userData; const x = P.L*(0.08 + 0.9*k/(NSEC-1));
+    const c = c0 - (curDefl ? curDefl(x) : 0); const a = Math.sqrt(Math.max(c*c - R*R, 1e-6));
+    const arr = l.geometry.attributes.position.array;
+    for (let i = 0; i < NP; i++){ arcPoint(b, a, R, i/(NP-1), tmp); arr[3*i] = x; arr[3*i+1] = tmp.y; arr[3*i+2] = tmp.z; }
+    l.geometry.attributes.position.needsUpdate = true;
+    l.userData.a = a; l.userData.x = x;
+  }
+}
+function updateCharges(dt, inten){
+  const arr = chGeo.attributes.position.array, tmp = { y: 0, z: 0 }, R = P.D/2, speed = 0.15 + 0.9*inten;
+  for (let i = 0; i < NCH; i++){
+    const l = fieldLines[i % fieldLines.length];
+    chPhase[i] = (chPhase[i] + dt*speed*(0.7 + 0.3*((i*37)%10)/10)) % 1;
+    arcPoint(l.userData.b, l.userData.a || 1, R, chPhase[i], tmp);
+    arr[3*i] = l.userData.x || 0; arr[3*i+1] = tmp.y; arr[3*i+2] = tmp.z;
+  }
+  chGeo.attributes.position.needsUpdate = true;
+}
+
+/* ---------- labels & scale bar ---------- */
+const labels = new THREE.Group(); scene.add(labels);
+function mkLabel(html, cls=''){ const d = document.createElement('div'); d.className = 'lbl ' + cls; d.innerHTML = html; return new CSS2DObject(d); }
+const lTop = mkLabel('Carbon nanowire · <b style="color:#ffd58a">+V</b>'), lBot = mkLabel('Carbon nanowire · <b style="color:#9cc7ff">GND</b>');
+const lPart = mkLabel('Target particle', 'amber'), lGap = mkLabel('gap', 'amber'), lElec = mkLabel('Au / Si microelectrodes · SOI');
+labels.add(lTop, lBot, lPart, lGap, lElec);
+const scaleBar = new THREE.Group(); scene.add(scaleBar);
+const sbMesh = new THREE.Mesh(new THREE.BoxGeometry(5, 0.12, 0.12), new THREE.MeshBasicMaterial({ color: 0xe6eef8 }));
+scaleBar.add(sbMesh); const sbL = mkLabel('5 µm'); sbL.position.set(0, -0.7, 0); scaleBar.add(sbL);
+function placeLabels(){
+  const c0 = P.G/2 + P.D/2;
+  lTop.position.set(P.L*0.42, 0.9, c0 + 0.3); lBot.position.set(P.L*0.42, 0.9, -c0 - 0.3);
+  lPart.position.set(particleX(), PD/2 + 0.9, 0); lPart.visible = showParticle && labels.visible;
+  lGap.position.set(P.L + 1.6, 0.9, 0);
+  lElec.position.set(-4.5, 1.2, c0 + 4.2);
+  scaleBar.position.set(P.L*0.5, -2.2, c0 + 6.5);
+}
+
+/* =========================================================
+   3) STATE UPDATE
+   ========================================================= */
+function applyState(){
+  rebuildWires(); updateField(); placeParticle(); placeLabels();
+  const gap = Math.max(P.G - 2*S.wShown, 0);
+  const inten = Math.min(S.V / T.VPI, 1.1);
+  $('o-v').innerHTML = S.V.toFixed(1) + '<small>V</small>';
+  $('o-pct').innerHTML = (100*S.V/T.VPI).toFixed(0) + ' % of V<sub>PI</sub>';
+  $('o-gap').innerHTML = gap.toFixed(2) + ' <small>µm</small>';
+  $('o-w').innerHTML = S.wShown.toFixed(3) + ' <small>µm</small>';
+  lGap.element.innerHTML = 'tip gap ' + gap.toFixed(2) + ' µm';
+  // electrostatic force on one arm & stored energy (uses calibrated V)
+  const R = P.D*1e-6/2, d0 = (P.G + P.D)*1e-6; let F = 0, Wf = 0; const n = 60;
+  for (let i = 0; i < n; i++){
+    const x = P.L*(i+0.5)/n, d = Math.max(d0 - 2*(curDefl(x)/MAG)*1e-6, 2*R*1.0001), a = Math.acosh(d/(2*R));
+    F += Math.PI*8.854e-12*S.V*S.V/(2*a*a*Math.sqrt(d*d-4*R*R)) * (P.L*1e-6/n);
+    Wf += 0.5*(Math.PI*8.854e-12/a)*S.V*S.V*(P.L*1e-6/n);
+  }
+  $('o-f').innerHTML = (F*1e9).toFixed(2) + ' <small>nN</small>';
+  $('o-e').innerHTML = (Wf*1e15).toFixed(2) + ' <small>fJ</small>';
+  // status
+  const st = $('status'); let cls, txt, hs;
+  if (S.collapsed){ cls='st-pull'; txt='⚠ PULL-IN · arms snapped into contact (saddle-node instability)'; hs='pull-in · collapse'; }
+  else if (S.grasped){ cls='st-grasp'; txt='✓ PARTICLE GRASPED · φp = ' + PD.toFixed(2) + ' µm'; hs='particle grasped'; }
+  else if (S.V > 0.95*T.VPI){ cls='st-near'; txt='NEAR PULL-IN · stiffness → 0, response highly nonlinear'; hs='near pull-in'; }
+  else { cls='st-stable'; txt='STABLE · elastic force balances electrostatic force'; hs='stable'; }
+  st.className = cls; st.textContent = txt;
+  $('h-v').textContent = S.V.toFixed(1) + ' V'; $('h-s').textContent = hs;
+  // glow & colours
+  const glow = Math.pow(Math.min(inten, 1), 2);
+  fieldMat.opacity = showField ? 0.08 + 0.55*glow : 0;
+  fieldMat.color.setHSL(0.56 - 0.48*glow, 0.95, 0.55 + 0.1*glow);
+  chMat.opacity = showField ? Math.min(1, 0.05 + 1.1*glow) : 0;
+  tips.forEach(t => t.material.emissiveIntensity = 0.4 + 3.5*glow + (S.collapsed ? 4 : 0));
+  warm.intensity = 40*glow + (S.collapsed ? 60 : 0); warm.position.set(P.L, 1.5, 0);
+  bloom.strength = bloomOn ? 0.35 + 0.9*glow + (S.collapsed ? 0.6 : 0) : 0;
+  drawPlot();
+}
+
+function setVoltage(V, fromSlider=false){
+  const Vmax = parseFloat($('s-volt').max);
+  V = Math.max(0, Math.min(Vmax, V)); S.V = V;
+  if (!fromSlider) $('s-volt').value = V.toFixed(1);
+  if (!S.collapsed && !S.anim && V > T.VPI){ startCollapse(); }
+  else if (S.collapsed && !S.anim && V < T.Vrel){ startRelease(); }
+  if (!S.anim){
+    if (S.collapsed){ const p = pathState(1); S.wTip = p.w; S.shapeA = p.a; S.shapeB = p.b; S.mix = p.m; }
+    else { const p = stableState(V); S.wTip = p.w; S.shapeA = p.a; S.shapeB = p.b; S.mix = p.m; }
+  }
+  applyState();
+}
+function startCollapse(){
+  S.anim = { type: 'collapse', t: 0 };
+  $('flash').classList.add('on'); setTimeout(() => $('flash').classList.remove('on'), 90);
+  shake = 0.5;
+}
+function startRelease(){ S.anim = { type: 'release', t: 0, from: S.wTip }; }
+function stepAnim(dt){
+  if (!S.anim) return;
+  const A = S.anim;
+  if (A.type === 'collapse'){
+    A.t = Math.min(1, A.t + dt/0.32);
+    const p = pathState(A.t*A.t);                         // accelerating snap along unstable shapes
+    S.wTip = p.w; S.shapeA = p.a; S.shapeB = p.b; S.mix = p.m;
+    if (A.t >= 1){ S.anim = null; S.collapsed = true; hist.push({ V: S.V, gap: 0, ev: 'pull-in' }); }
+  } else {
+    A.t = Math.min(1, A.t + dt/0.45);
+    const target = stableState(S.V); const k = 1 - Math.pow(1 - A.t, 3);
+    S.wTip = A.from + (target.w - A.from)*k; S.shapeA = target.a; S.shapeB = target.b; S.mix = target.m;
+    if (A.t >= 1){ S.anim = null; S.collapsed = false; }
+  }
+  applyState();
+}
+
+/* =========================================================
+   4) EQUILIBRIUM PLOT
+   ========================================================= */
+const pc = $('plot'), px = pc.getContext('2d');
+function sizePlot(){ const r = pc.getBoundingClientRect(); if (!r.width) return; pc.width = r.width*devicePixelRatio; pc.height = r.height*devicePixelRatio; px.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+function isBench(){ return Math.abs(P.L-BENCH.L)<0.05 && Math.abs(P.D-BENCH.D)<0.005 && Math.abs(P.G-BENCH.G)<0.03 && Math.abs(P.E-BENCH.E)<0.3; }
+function drawPlot(){
+  if (!T) return;
+  const W = pc.width/devicePixelRatio, H = pc.height/devicePixelRatio; if (!W) return;
+  px.clearRect(0,0,W,H);
+  const pl=40, pr=10, pt=10, pb=30, w=W-pl-pr, h=H-pt-pb;
+  const xMax = Math.max(T.VPI*1.12, VPI_EXP*1.05*(isBench()?1:0)), yMax = P.G;
+  const X = v => pl + v/xMax*w, Y = g => pt + (1 - g/yMax)*h;
+  px.font = '10px Inter, sans-serif'; px.fillStyle = '#5d728a'; px.strokeStyle = 'rgba(120,180,255,.10)'; px.lineWidth = 1;
+  for (let i = 0; i <= 5; i++){ const v = xMax*i/5; px.beginPath(); px.moveTo(X(v), pt); px.lineTo(X(v), pt+h); px.stroke(); px.textAlign='center'; px.fillText(v.toFixed(0), X(v), pt+h+13); }
+  for (let i = 0; i <= 4; i++){ const g = yMax*i/4; px.beginPath(); px.moveTo(pl, Y(g)); px.lineTo(pl+w, Y(g)); px.stroke(); px.textAlign='right'; px.fillText(g.toFixed(1), pl-5, Y(g)+3); }
+  px.fillStyle = '#8aa0b8'; px.textAlign='center'; px.fillText('Applied voltage V (V)', pl+w/2, H-3);
+  px.save(); px.translate(10, pt+h/2); px.rotate(-Math.PI/2); px.fillText('Tip gap g (µm)', 0, 0); px.restore();
+  // pull-in zone
+  px.fillStyle = 'rgba(255,93,93,.06)'; px.fillRect(X(T.VPI), pt, X(xMax)-X(T.VPI), h);
+  // stable
+  px.strokeStyle = '#2dd4bf'; px.lineWidth = 2.6; px.beginPath();
+  for (let i = 0; i <= T.iPI; i++){ const g = P.G - 2*T.w[i]; i ? px.lineTo(X(T.V[i]), Y(g)) : px.moveTo(X(T.V[i]), Y(g)); }
+  px.lineTo(X(T.VPI), Y(P.G - 2*T.wPI)); px.stroke();
+  // unstable
+  px.strokeStyle = '#ff5d5d'; px.setLineDash([5,4]); px.lineWidth = 2; px.beginPath(); px.moveTo(X(T.VPI), Y(P.G - 2*T.wPI));
+  for (let i = T.iPI+1; i < T.w.length-1; i++) px.lineTo(X(T.V[i]), Y(P.G - 2*T.w[i]));
+  px.stroke(); px.setLineDash([]);
+  // jump & release arrows
+  px.strokeStyle = 'rgba(255,93,93,.75)'; px.lineWidth = 1.4; px.beginPath(); px.moveTo(X(T.VPI), Y(P.G-2*T.wPI)); px.lineTo(X(T.VPI), Y(0)); px.stroke();
+  px.strokeStyle = 'rgba(56,189,248,.7)'; px.setLineDash([2,3]); px.beginPath(); px.moveTo(X(T.VPI), Y(0)+0.5); px.lineTo(X(T.Vrel), Y(0)+0.5);
+  const gr = P.G - 2*stableState(T.Vrel).w; px.lineTo(X(T.Vrel), Y(gr)); px.stroke(); px.setLineDash([]);
+  px.fillStyle = 'rgba(56,189,248,.85)'; px.textAlign='left'; px.fillText('release ≈ ' + T.Vrel.toFixed(0) + ' V', X(T.Vrel)+4, Y(0)-5);
+  // benchmarks
+  if (isBench()){
+    px.strokeStyle = '#94a3b8'; px.setLineDash([3,3]); px.beginPath(); px.moveTo(X(VPI_EXP), pt); px.lineTo(X(VPI_EXP), pt+h); px.stroke(); px.setLineDash([]);
+    px.fillStyle = '#94a3b8'; px.textAlign='right'; px.fillText('exp. 101 V', X(VPI_EXP)-3, pt+10);
+    px.fillStyle = '#a78bfa'; px.fillRect(X(VPI_FEM)-4, Y(GAP_FEM)-4, 8, 8);
+  }
+  // model pull-in
+  px.fillStyle = '#f8a917'; px.beginPath(); px.arc(X(T.VPI), Y(P.G-2*T.wPI), 5, 0, 7); px.fill();
+  px.textAlign='right'; px.font='600 10px Inter, sans-serif'; px.fillText('V_PI ' + T.VPI.toFixed(1) + ' V', X(T.VPI)-8, Y(P.G-2*T.wPI)+14);
+  // operating point
+  const g = Math.max(P.G - 2*(S.wShown ?? 0), 0);
+  px.shadowColor = S.collapsed ? '#ff5d5d' : '#ffffff'; px.shadowBlur = 14;
+  px.fillStyle = S.collapsed ? '#ff5d5d' : '#ffffff'; px.beginPath(); px.arc(X(Math.min(S.V, xMax)), Y(g), 5.5, 0, 7); px.fill(); px.shadowBlur = 0;
+}
+
+/* =========================================================
+   5) PARAMETERS
+   ========================================================= */
+let recomputeTimer = null;
+function recompute(){
+  buildTable();
+  const sv = $('s-volt'); sv.max = (T.VPI*1.1).toFixed(1);
+  $('t-pi').innerHTML = 'V<sub>PI</sub> = ' + T.VPI.toFixed(1) + ' V'; $('t-max').textContent = (T.VPI*1.1).toFixed(0) + ' V';
+  $('o-vpi').innerHTML = T.VPI.toFixed(1) + ' <small>V</small>';
+  $('o-gpi').innerHTML = (P.G - 2*T.wPI).toFixed(2) + ' <small>µm</small>';
+  $('s-pd').max = (P.G - 0.1).toFixed(2); if (PD > P.G - 0.1){ PD = P.G - 0.1; $('s-pd').value = PD; $('o-pd').textContent = PD.toFixed(2)+' µm'; }
+  rebuildChip();
+  S.collapsed = false; S.anim = null;
+  setVoltage(Math.min(S.V, T.VPI*0.999));
+}
+function bindParam(id, key, fmt){
+  $('s-'+id).addEventListener('input', e => {
+    P[key] = parseFloat(e.target.value); $('o-'+id).textContent = fmt(P[key]);
+    clearTimeout(recomputeTimer); recomputeTimer = setTimeout(recompute, 60);
+  });
+}
+bindParam('L','L', v => v.toFixed(1)+' µm'); bindParam('D','D', v => v.toFixed(2)+' µm');
+bindParam('G','G', v => v.toFixed(2)+' µm'); bindParam('E','E', v => v.toFixed(1)+' GPa');
+$('b-reset').onclick = () => {
+  Object.assign(P, BENCH);
+  [['L',v=>v.toFixed(1)+' µm'],['D',v=>v.toFixed(2)+' µm'],['G',v=>v.toFixed(2)+' µm'],['E',v=>v.toFixed(1)+' GPa']].forEach(([k,f]) => { const key = k==='G'?'G':k; $('s-'+k).value = P[key]; $('o-'+k).textContent = f(P[key]); });
+  recompute(); toast('Benchmark geometry restored (Chang et al., 2009)');
+};
+$('s-volt').addEventListener('input', e => { stopSweep(); setVoltage(parseFloat(e.target.value), true); });
+$('s-pd').addEventListener('input', e => { PD = parseFloat(e.target.value); $('o-pd').textContent = PD.toFixed(2)+' µm'; setVoltage(S.V); });
+
+/* switches */
+function sw(id, init, fn){ const el = $(id); let on = init; el.classList.toggle('on', on); el.onclick = () => { on = !on; el.classList.toggle('on', on); fn(on); }; }
+sw('w-part', true, v => { showParticle = v; setVoltage(S.V); });
+sw('w-field', true, v => { showField = v; fieldGroup.visible = v; charges.visible = v; applyState(); });
+sw('w-cmap', true, v => { showCmap = v; applyState(); });
+sw('w-lbl', true, v => { labels.visible = v; scaleBar.visible = v; labelR.domElement.style.display = v ? '' : 'none'; placeLabels(); });
+sw('w-bloom', true, v => { bloomOn = v; applyState(); });
+let autoSpin = false; sw('w-spin', false, v => { autoSpin = v; controls.autoRotate = v; controls.autoRotateSpeed = 0.8; });
+document.querySelectorAll('#mag button').forEach(b => b.onclick = () => { MAG = +b.dataset.m; document.querySelectorAll('#mag button').forEach(x => x.classList.toggle('on', x===b)); applyState(); toast(MAG===1?'True-scale deflection':'Deflection magnified ×2 (visual only)'); });
+document.querySelectorAll('.panel .ph').forEach(h => h.addEventListener('click', e => { if (e.target.id !== 'camst') h.parentElement.classList.toggle('collapsed'); }));
+
+/* =========================================================
+   6) CAMERA VIEWS
+   ========================================================= */
+function views(){
+  const L = P.L, c = P.G/2;
+  return {
+    iso:  { p: [L*0.95, L*0.62, L*1.05], t: [L*0.45, -0.5, 0] },
+    top:  { p: [L*0.5, L*1.45, 0.01],    t: [L*0.5, 0, 0] },
+    side: { p: [L*0.5, 2.0, L*1.35],     t: [L*0.5, 0, 0] },
+    tip:  { p: [L*1.18, c*1.4, c*2.6],   t: [L*0.92, 0, 0] },
+    end:  { p: [L*1.9, 1.5, 0.01],       t: [L*0.6, 0, 0] }
+  };
+}
+let camAnim = null;
+function goView(name){
+  const v = views()[name]; if (!v) return;
+  camAnim = { t: 0, fp: camera.position.clone(), tp: new THREE.Vector3(...v.p), ft: controls.target.clone(), tt: new THREE.Vector3(...v.t) };
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.v === name));
+}
+document.querySelectorAll('#views button').forEach(b => b.onclick = () => goView(b.dataset.v));
+
+/* =========================================================
+   7) SWEEP (up through pull-in and back → hysteresis)
+   ========================================================= */
+let sweep = null;
+function stopSweep(){ if (!sweep) return; sweep = null; $('b-sweep').classList.remove('run'); $('b-sweep').textContent = '▶ Sweep up to pull-in and back (hysteresis)'; }
+$('b-sweep').onclick = () => {
+  if (sweep){ stopSweep(); return; }
+  S.collapsed = false; S.anim = null; setVoltage(0);
+  sweep = { dir: 1, hold: 0 }; $('b-sweep').classList.add('run'); $('b-sweep').textContent = '■ Stop sweep';
+};
+function stepSweep(dt){
+  if (!sweep || S.anim) return;
+  if (sweep.hold > 0){ sweep.hold -= dt; return; }
+  const rate = T.VPI*0.16*(S.V > 0.85*T.VPI && sweep.dir > 0 ? 0.35 : 1);
+  let V = S.V + sweep.dir*rate*dt;
+  if (sweep.dir > 0 && V >= T.VPI*1.04){ V = T.VPI*1.04; sweep.dir = -1; sweep.hold = 1.2; }
+  if (sweep.dir < 0 && V <= 0){ V = 0; sweep.dir = 1; sweep.hold = 1.0; }
+  setVoltage(V);
+}
+
+/* =========================================================
+   8) TOOLS: snapshot, CSV, presentation, fullscreen, toast, tour
+   ========================================================= */
+const hist = [];
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
+$('t-snap').onclick = () => {
+  composer.render();
+  const src = renderer.domElement, c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+  const x = c.getContext('2d'); x.drawImage(src, 0, 0);
+  x.fillStyle = 'rgba(3,7,13,.65)'; x.fillRect(0, c.height-70*devicePixelRatio, c.width, 70*devicePixelRatio);
+  x.fillStyle = '#e6eef8'; x.font = `${18*devicePixelRatio}px Times New Roman`;
+  x.fillText(`Electrostatic nanotweezer · V = ${S.V.toFixed(1)} V · tip gap = ${(P.G-2*S.wShown).toFixed(2)} µm`, 20*devicePixelRatio, c.height-42*devicePixelRatio);
+  x.fillStyle = '#8fa6c0'; x.font = `${13*devicePixelRatio}px Times New Roman`;
+  x.fillText('Kavianpour, Gharib, Koochi, Goharimanesh — University of Torbat Heydarieh', 20*devicePixelRatio, c.height-18*devicePixelRatio);
+  const a = document.createElement('a'); a.href = c.toDataURL('image/png'); a.download = `nanotweezer_${S.V.toFixed(1)}V.png`; a.click(); toast('✓ Snapshot saved');
+};
+$('t-csv').onclick = () => {
+  const rows = ['# Electrostatic nanotweezer equilibrium path (reduced-order model, kappa=' + KAPPA.toFixed(4) + ')',
+    `# L=${P.L} um, D=${P.D} um, g0=${P.G} um, E=${P.E} GPa`, 'branch,voltage_V,tip_deflection_um,tip_gap_um'];
+  T.w.forEach((w, i) => { if (i < T.w.length-1) rows.push(`${i <= T.iPI ? 'stable' : 'unstable'},${T.V[i].toFixed(3)},${w.toFixed(4)},${(P.G-2*w).toFixed(4)}`); });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' })); a.download = 'nanotweezer_equilibrium_path.csv'; a.click();
+  toast('✓ Equilibrium path exported (' + (T.w.length-1) + ' points)');
+};
+function togglePres(){ document.body.classList.toggle('pres'); $('t-pres').classList.toggle('on', document.body.classList.contains('pres')); }
+$('t-pres').onclick = togglePres;
+$('t-full').onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); };
+
+const TOUR = [
+  ['A digital twin of the Chang (2009) nanotweezer', 'Two carbon nanowires (L = 19.6 µm, φ = 0.3 µm, g₀ = 6.9 µm) grow from Au/Si microelectrodes on an SOI chip and hang free over a trench. One wire is biased at +V, the other is grounded.'],
+  ['Drive the voltage', 'Use the slider, the ← → keys, or the ▶ sweep. The arms bend toward each other; colours show the local displacement and the glowing arcs are the exact electric-field lines in each cross-section.'],
+  ['Pull-in: a saddle-node fold', 'The plot shows the full equilibrium path. The stable branch (teal) ends at the fold — the pull-in voltage. Beyond it no equilibrium exists and the arms snap together along the unstable branch (red dashes). Lower the voltage to see the release (hysteresis).'],
+  ['Grasp a particle', 'A target micro-particle sits between the tips. When the tip gap reaches its diameter the tweezer grasps it. Graspable sizes run from the pull-in gap up to g₀.'],
+  ['Explore the design space', 'Change L, φ, g₀ and E: the equilibrium path is recomputed instantly. Try ✋ gesture control (pinch thumb–index to raise the voltage), 🎬 presentation mode, 📷 snapshots and 💾 CSV export.']
+];
+let ti = 0;
+function showTour(){ ti = 0; renderTour(); $('tour').classList.add('show'); }
+function renderTour(){ $('tr-n').textContent = `Step ${ti+1} / ${TOUR.length}`; $('tr-h').textContent = TOUR[ti][0]; $('tr-p').textContent = TOUR[ti][1]; $('tr-next').textContent = ti === TOUR.length-1 ? 'Start ✓' : 'Next →'; }
+$('tr-next').onclick = () => { ti++; if (ti >= TOUR.length){ $('tour').classList.remove('show'); store.set('nt_tour2','1'); } else renderTour(); };
+$('tr-skip').onclick = () => { $('tour').classList.remove('show'); store.set('nt_tour2','1'); };
+$('t-tour').onclick = showTour;
+
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+  const k = e.key;
+  if (k === 'ArrowRight' || k === 'ArrowUp'){ stopSweep(); setVoltage(S.V + (e.shiftKey ? 0.2 : 2)); e.preventDefault(); }
+  else if (k === 'ArrowLeft' || k === 'ArrowDown'){ stopSweep(); setVoltage(S.V - (e.shiftKey ? 0.2 : 2)); e.preventDefault(); }
+  else if (k === 'r' || k === 'R'){ stopSweep(); S.collapsed = false; S.anim = null; setVoltage(0); }
+  else if (k === 'p' || k === 'P') togglePres();
+  else if (k === 'f' || k === 'F') $('t-full').click();
+  else if (k === 's' || k === 'S') $('b-sweep').click();
+  else if (k === 'Escape' && document.body.classList.contains('pres')) togglePres();
+  else if ('12345'.includes(k)) goView(['iso','top','side','tip','end'][+k-1]);
+});
+
+/* =========================================================
+   9) GESTURE CONTROL (MediaPipe, loaded on demand)
+   ========================================================= */
+const video = $('webcam'), ov = $('ov'), octx = ov.getContext('2d'), camst = $('camst');
+let hand = null, stream = null, camOn = false, lastT = -1, pMin = 1, pMax = 0.02;
+function setCam(t, c=''){ camst.textContent = t; camst.className = c; }
+async function startCam(){
+  $('camp').classList.add('show'); $('t-cam').classList.add('on');
+  try {
+    setCam('loading model…');
+    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+    const fs = await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    hand = await mp.HandLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', delegate: 'GPU' }, runningMode: 'VIDEO', numHands: 2 });
+    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' }, audio: false });
+    video.srcObject = stream; await video.play();
+    ov.width = video.videoWidth || 640; ov.height = video.videoHeight || 480;
+    camOn = true; setCam('show right hand', ''); stopSweep(); requestAnimationFrame(camLoop);
+  } catch (err){ console.error(err); setCam('unavailable', 'err'); toast('Camera unavailable — use the slider'); $('t-cam').classList.remove('on'); }
+}
+function stopCam(){ camOn = false; stream?.getTracks().forEach(t => t.stop()); stream = null; hand = null; $('camp').classList.remove('show'); $('t-cam').classList.remove('on'); setCam('idle'); }
+$('t-cam').onclick = () => camOn ? stopCam() : startCam();
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function camLoop(){
+  if (!camOn) return;
+  if (hand && video.currentTime !== lastT){
+    lastT = video.currentTime;
+    try {
+      const r = hand.detectForVideo(video, performance.now());
+      octx.clearRect(0, 0, ov.width, ov.height);
+      let idx = -1;
+      (r.handednesses || []).forEach((h, k) => { if (idx < 0 && h[0]?.categoryName === 'Right' && h[0].score > 0.5) idx = k; });
+      if (idx >= 0){
+        const lm = r.landmarks[idx], W = ov.width, H = ov.height;
+        octx.strokeStyle = 'rgba(56,189,248,.8)'; octx.lineWidth = 2;
+        for (const [a, b] of BONES){ octx.beginPath(); octx.moveTo(lm[a].x*W, lm[a].y*H); octx.lineTo(lm[b].x*W, lm[b].y*H); octx.stroke(); }
+        octx.strokeStyle = '#f8a917'; octx.setLineDash([6,4]); octx.beginPath(); octx.moveTo(lm[4].x*W, lm[4].y*H); octx.lineTo(lm[8].x*W, lm[8].y*H); octx.stroke(); octx.setLineDash([]);
+        for (const [i, c] of [[4,'#ff7a45'],[8,'#2dd4bf']]){ octx.fillStyle = c; octx.beginPath(); octx.arc(lm[i].x*W, lm[i].y*H, 8, 0, 7); octx.fill(); }
+        const pinch = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+        pMax = Math.max(pMax*0.997, pinch); pMin = Math.min(pMin*1.003, pinch);
+        const n = Math.max(0, Math.min(1, (pMax - pinch)/Math.max(pMax - pMin, 1e-3)));
+        setCam('pinch → ' + (n*100).toFixed(0) + ' %', 'ok');
+        setVoltage(n * T.VPI * 1.06);       // closing the fingers beyond 94 % triggers pull-in
+      } else setCam('show right hand', '');
+    } catch (e){}
+  }
+  requestAnimationFrame(camLoop);
+}
+
+/* =========================================================
+   10) LOOP
+   ========================================================= */
+let shake = 0;
+const clock = new THREE.Clock();
+function loop(){
+  requestAnimationFrame(loop);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  stepSweep(dt); stepAnim(dt);
+  if (camAnim){
+    camAnim.t = Math.min(1, camAnim.t + dt*1.6); const k = camAnim.t < .5 ? 4*camAnim.t**3 : 1 - Math.pow(-2*camAnim.t + 2, 3)/2;
+    camera.position.lerpVectors(camAnim.fp, camAnim.tp, k); controls.target.lerpVectors(camAnim.ft, camAnim.tt, k);
+    if (camAnim.t >= 1) camAnim = null;
+  }
+  controls.update();
+  if (shake > 0){ shake = Math.max(0, shake - dt*1.6); camera.position.x += (Math.random()-.5)*shake*0.35; camera.position.y += (Math.random()-.5)*shake*0.35; }
+  if (showField) updateCharges(dt, Math.min(S.V / (T?.VPI || 1), 1));
+  composer.render(); labelR.render(scene, camera);
+}
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); labelR.setSize(innerWidth, innerHeight);
+  sizePlot(); drawPlot();
+});
+
+/* =========================================================
+   11) INIT
+   ========================================================= */
+calibrate();
+buildTable();
+rebuildChip();
+$('s-volt').max = (T.VPI*1.1).toFixed(1);
+sizePlot();
+recompute();
+const v0 = views().iso; camera.position.set(...v0.p); controls.target.set(...v0.t);
+loop();
+setTimeout(() => { $('loading').style.opacity = 0; setTimeout(() => $('loading').remove(), 600); }, 250);
+if (!store.get('nt_tour2')) setTimeout(showTour, 900);
+console.log('%cElectrostatic nanotweezer digital twin — κ = ' + KAPPA.toFixed(4), 'color:#38bdf8;font-weight:bold');
+console.log('%cInteractive system designed by Dr. Masoud Goharimanesh', 'color:#ffd16b;font-style:italic');
+</script>
+</body>
+</html>

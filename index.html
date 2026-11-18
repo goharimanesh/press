@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCSLAB × SSSLAB — Interactive Research Showcase</title>
+<meta name="description" content="Interactive simulators, digital twins and research podcasts from ARCSLAB and the S³ Smart Small Systems Lab, University of Torbat Heydarieh.">
+<meta name="theme-color" content="#05070d">
+<meta property="og:title" content="ARCSLAB × SSSLAB — Interactive Research Showcase">
+<meta property="og:description" content="Interactive simulators and digital twins built by our students, running in your browser.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="topbar" id="topbar">
+  <a class="brand" href="#top">
+    <img src="assets/img/favicon.svg" alt="">
+    <span class="brand-txt"><b><span class="a">ARCSLAB</span><span class="x"> × </span><span class="s">SSSLAB</span></b><span>Interactive Research Showcase</span></span>
+  </a>
+  <nav class="nav">
+    <a href="#models">Models</a>
+    <a href="#labs">Laboratories</a>
+    <a href="#how">How it works</a>
+  </nav>
+</header>
+
+<!-- ========================= INTRO ========================= -->
+<section class="intro" id="top">
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="intro-head">
+    <div class="bism a-fade">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <p class="eyebrow a-fade" id="inst">Department of Mechanical Engineering · University of Torbat Heydarieh</p>
+  </div>
+
+  <div class="portals">
+    <a class="portal portal--arcs" href="#models" data-lab="arcslab">
+      <img class="portal-mark a-fade" src="assets/img/arcslab-mark.svg" alt="">
+      <span class="portal-kicker a-fade">Advanced Robotics &amp; Control Systems Laboratory</span>
+      <span class="portal-name split">ARCSLAB</span>
+      <span class="portal-tag a-fade">Advancing soft and continuum robotics</span>
+      <span class="portal-meta a-fade"><b data-count="arcslab">0</b> interactive models</span>
+      <span class="portal-cta a-fade">Explore ARCSLAB models <i>→</i></span>
+    </a>
+    <div class="portal-divider a-fade"><span>×</span></div>
+    <a class="portal portal--sss" href="#models" data-lab="sss">
+      <img class="portal-mark a-fade" src="assets/img/sss-mark.svg" alt="">
+      <span class="portal-kicker a-fade">S³ · Smart Small Systems Laboratory</span>
+      <span class="portal-name split">SSSLAB</span>
+      <span class="portal-tag a-fade">From non-classical mechanics to smart micro/nano systems</span>
+      <span class="portal-meta a-fade"><b data-count="sss">0</b> interactive models</span>
+      <span class="portal-cta a-fade">Explore SSSLAB models <i>→</i></span>
+    </a>
+  </div>
+
+  <div class="intro-foot">
+    <p class="lede a-fade">Digital twins, live solvers and interactive simulators built by our students. Every model runs in your browser, and many come with a short research podcast.</p>
+    <a class="scroll-cue a-fade" href="#models">Enter the showcase<span>↓</span></a>
+  </div>
+</section>
+
+<!-- ========================= GALLERY ========================= -->
+<section class="section" id="models">
+  <div class="section-head reveal">
+    <div>
+      <p class="eyebrow">01 — Gallery</p>
+      <h2 class="display">Interactive <em>models</em></h2>
+    </div>
+    <p class="section-sub">Choose a model to read about it and hear its podcast, or launch it straight away. Each one opens full-screen with the podcast in the top bar.</p>
+  </div>
+
+  <div class="toolbar reveal">
+    <div class="seg" role="tablist" aria-label="Filter by laboratory">
+      <button data-filter="all" class="on" role="tab">All labs <small data-count="all">0</small></button>
+      <button data-filter="arcslab" role="tab">ARCSLAB <small data-count="arcslab">0</small></button>
+      <button data-filter="sss" role="tab">SSSLAB <small data-count="sss">0</small></button>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search models, authors, topics…" autocomplete="off">
+    </label>
+  </div>
+  <p class="result-line" id="resultLine"></p>
+
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden>No models match your search.</p>
+</section>
+
+<!-- ========================= LABS ========================= -->
+<section class="section" id="labs">
+  <div class="section-head reveal">
+    <div>
+      <p class="eyebrow">02 — Laboratories</p>
+      <h2 class="display">Two labs, <em>one bench</em></h2>
+    </div>
+    <p class="section-sub">Sister laboratories in the Department of Mechanical Engineering: one bends robots, the other shrinks machines to the micro and nano scale.</p>
+  </div>
+  <div class="labs" id="labCards"></div>
+</section>
+
+<!-- ========================= HOW ========================= -->
+<section class="section" id="how">
+  <div class="section-head reveal">
+    <div>
+      <p class="eyebrow">03 — How it works</p>
+      <h2 class="display">Choose, launch, <em>listen</em></h2>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step reveal"><div class="n">01</div><h3>Choose a model</h3><p>Filter by laboratory or search by topic, author or method. Open a card to read the abstract and the list of features.</p></div>
+    <div class="step reveal"><div class="n">02</div><h3>Launch it full-screen</h3><p>The simulator runs in your browser: drag to rotate, use the sliders, and try webcam gesture control where it is offered.</p></div>
+    <div class="step reveal"><div class="n">03</div><h3>Listen to the podcast</h3><p>When a model has a research podcast, play it from the card, the details panel or the top bar while you explore.</p></div>
+  </div>
+  <pre class="tree reveal"><em># Each model lives in its own folder. Drop a podcast file next to it and it plays automatically.</em>
+models/
+├── <b>registry.js</b>                     <em>← list of models (title, lab, authors, abstract…)</em>
+├── s3-cnw-nanotweezer-twin/
+│   ├── index.html                  <em>← the simulation</em>
+│   ├── cover.svg                   <em>← card image</em>
+│   └── <i>podcast.mp3</i>                 <em>← optional · also .m4a .ogg .wav …</em>
+├── s3-fgm-tapered-nanotweezer/
+├── arcs-continuum-arm-demo/
+└── _template/                      <em>← copy this to start a new model</em></pre>
+</section>
+
+<footer class="footer">
+  <div class="footer-in">
+    <p class="motto">Alignment of science and practice for a bright future.<span>University of Torbat Heydarieh</span></p>
+    <small>
+      <a href="https://goharimanesh.github.io/arcslab/" target="_blank" rel="noopener">ARCSLAB</a> ·
+      <a href="https://akoochi.github.io/SSS-Lab/" target="_blank" rel="noopener">S³ Lab</a><br>
+      Department of Mechanical Engineering<br>
+      © <span id="yr"></span> ARCSLAB &amp; S³ Lab
+    </small>
+  </div>
+</footer>
+
+<!-- ========================= MODAL ========================= -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="modal-close" id="mClose" aria-label="Close">✕</button>
+    <div class="modal-media">
+      <img id="mCover" alt="">
+      <div class="modal-feats"><h4>What you can do</h4><ul id="mFeats"></ul></div>
+    </div>
+    <div class="modal-info">
+      <span class="chip" id="mChip"></span>
+      <h2 id="mTitle"></h2>
+      <div class="authors" id="mAuthors"></div>
+      <div class="venue" id="mVenue"></div>
+      <p class="abstract" id="mAbstract"></p>
+      <div class="tags" id="mTags"></div>
+      <h4 style="margin:6px 0 -4px">Podcast</h4>
+      <div id="mPodcast"></div>
+      <div class="actions">
+        <a class="btn btn--primary" id="mLaunch" href="#">Launch model
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn" id="mStandalone" href="#" target="_blank" rel="noopener">Open standalone ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="models/registry.js"></script>
+<script src="assets/js/podcast.js"></script>
+<!-- GSAP animations (optional: the page still works offline without them) -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
